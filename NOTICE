@@ -1,0 +1,33 @@
+Open Agentic Engineering Framework (OAEF)
+Copyright 2026 Felipe Carvalho. All rights reserved.
+
+Created and authored by Felipe Carvalho.
+
+This framework establishes a vendor-neutral, mathematically bounded open standard
+for software engineering workflows operated by autonomous AI coding agents
+and human engineers.
+
+Foundational Influences and Citations:
+- Andrej Karpathy: The LLM Wiki architecture, continuous structured synthesis,
+  and documentation maintenance scripts.
+- Google: Open Knowledge Format (OKF) semantic YAML frontmatter metadata.
+- Jeremy Howard & Answer.ai: The /llms.txt standard for machine-readable discovery.
+- Very Good Ventures (VGV): Clean Code philosophy, strict static analysis, and
+  rigorous 100% automated test coverage culture.
+- Michael Nygard: Architecture Decision Records (ADR) for immutable historical records.
+- Dan North & Martin Fowler: Behavior-Driven Development (BDD) and executable specifications.
+- Robert C. Martin (Uncle Bob): Clean Code craftsmanship, meaningful names,
+  single responsibility, clean sizing limits, and ban on abbreviations and flag arguments.
+- Cyrille Martraire: Living Documentation concepts and executable architectural contracts.
+
+Original OAEF Innovations by Felipe Carvalho:
+- The Inviolable Trust Hierarchy (Compiler > Tests > Source Code > Docs > Memory > Hallucination).
+- The 4 Pillars of Agentic Software Engineering.
+- Zero-Docker / Zero-Daemon Living Memory (Session Handoff & Append-Only Ledger).
+- Stack-Adaptive Agent Skills Catalog.
+- Multi-Tool IDE Synchronization Engine (AGENTS.md, CLAUDE.md, .cursorrules, .windsurfrules).
+- Algorithmic Multidimensional Quality Gates with the Monotonic Ratchet Rule.
+- The Architectural Discovery Interview Protocol.
+
+Any commercial or open-source distribution, modification, or derivative of this
+framework must retain this notice and provide clear attribution to the original author.

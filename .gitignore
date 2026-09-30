@@ -1,0 +1,59 @@
+# ==============================================================================
+# OAEF Root Git Ignore Configuration
+# Author & Creator: Felipe Carvalho
+# License: Apache License 2.0
+# ==============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows & Linux Desktop
+Thumbs.db
+ehthumbs.db
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Secrets and Environment Variables (Strictly Banned from Commits)
+.env*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# Multi-Stack Build Outputs & Caches
+node_modules/
+dist/
+build/
+.dart_tool/
+target/
+.gradle/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+htmlcov/
+.coverage
+.expo/
+.next/
+.build/
+
+# Language-Specific Binaries Scoped (Preserve Root CLI bin/oaef)
+examples/**/bin/
+**/obj/
+!bin/oaef
+
+# Release Archives Generated Locally
+*.zip
+*.zip.sha256

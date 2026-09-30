@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "framework": "OAEF",
+  "profile": "strict",
+  "stack": "expo",
+  "baseline": {
+    "coverage": {
+      "lines_min_percentage": 95.0,
+      "statements_min_percentage": 95.0,
+      "functions_min_percentage": 95.0,
+      "branches_min_percentage": 90.0
+    },
+    "duplication": {
+      "max_percentage": 3.0,
+      "max_fragments": 0,
+      "fragment_min_lines": 15
+    },
+    "violations": {
+      "max_analysis_violations": 0,
+      "max_unallowed_ignores": 0
+    },
+    "clean_sizing": {
+      "max_oversized_files": 0,
+      "file_max_lines": 300,
+      "max_oversized_methods": 0,
+      "method_max_lines": 50
+    },
+    "secret_scanning": {
+      "max_detected_secrets": 0
+    },
+    "exclusions": {
+      "coverage": [
+        ".g.",
+        "/generated/",
+        ".min.js",
+        "_test.",
+        "test/"
+      ],
+      "clean_sizing": [
+        ".g.",
+        "/generated/",
+        "dist/",
+        "build/"
+      ]
+    }
+  }
+}

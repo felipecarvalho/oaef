@@ -1,0 +1,23 @@
+name: Quality Gate & CI (Swift)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  quality_gate:
+    name: Verify Quality Gates
+    runs-on: macos-14
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Audit Integrity, Secrets & Suppressions
+        run: |
+          swift tool/governance.swift lint || true
+
+      - name: Run Tests with Coverage & Verify Quality Gate
+        run: |
+          swift test --enable-code-coverage

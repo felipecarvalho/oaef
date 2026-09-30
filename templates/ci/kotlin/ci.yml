@@ -1,0 +1,32 @@
+name: Quality Gate & CI (Kotlin)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  quality_gate:
+    name: Verify Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Audit Integrity, Secrets & Suppressions
+        run: |
+          ./gradlew check
+
+      - name: Run Tests with Coverage & Verify Quality Gate
+        run: |
+          ./gradlew test jacocoTestReport

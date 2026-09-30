@@ -1,0 +1,11 @@
+{
+  "framework": "Open Agentic Engineering Framework (OAEF)",
+  "version": "1.0.0",
+  "author": "Felipe Carvalho",
+  "project_name": "swift-starter",
+  "description": "",
+  "stack": "swift",
+  "strictness": "strict",
+  "installed_at": "2026-09-30T16:30:56Z",
+  "inviolable_trust_hierarchy": "Compiler > Automated Tests > Source Code > Wiki/Docs > Ephemeral Memory > LLM Hallucination"
+}

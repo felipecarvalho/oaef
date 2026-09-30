@@ -1,0 +1,22 @@
+---
+name: architecture-audit
+description: Specialized architecture-audit skill for Universal / Polyglot under the Open Agentic Engineering Framework (OAEF).
+metadata:
+  framework: OAEF
+  stack: universal
+  version: 1.0.0
+---
+
+# Architecture Audit (Universal / Polyglot)
+
+> **Stack Profile:** Universal / Polyglot  
+> **Governance Standard:** OAEF v1.0.0 (Author: Felipe Carvalho)  
+> **Quality Gate Policy:** Strict mathematical audit and Clean Sizing.
+
+## Mission & Scope
+Audit layer coupling, dependency direction, and architectural modularity in Universal / Polyglot.
+
+## Invariants
+- Dependencies must point inwards towards core domain contracts.
+- High-level business logic must not depend on low-level UI or database details.
+- Audit file sizes and cyclomatic complexity using `POSIX line counter & regex audit`.

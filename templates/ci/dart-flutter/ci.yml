@@ -1,0 +1,39 @@
+name: Quality Gate & CI (Dart & Flutter)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  quality_gate:
+    name: Verify Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: |
+          if [ -f pubspec.yaml ]; then
+            if grep -q "flutter:" pubspec.yaml; then
+              flutter pub get
+            else
+              dart pub get
+            fi
+          fi
+
+      - name: Audit Integrity, Mirrors, Secrets & Suppressions
+        run: |
+          dart run tool/governance.dart lint
+
+      - name: Run Tests with Coverage & Verify Quality Gate
+        run: |
+          dart run tool/governance.dart quality-gate

@@ -1,0 +1,23 @@
+# expo-starter
+
+> A Living Repository engineered with the Open Agentic Engineering Framework (OAEF).
+
+## Core Governance & Architecture
+- [AGENTS.md](AGENTS.md): Canonical working contract and rules for all autonomous AI agents and engineers.
+- [CLAUDE.md](CLAUDE.md): Synchronized rules mirror for Claude Code.
+- [docs/MANIFESTO.md](docs/MANIFESTO.md): Dual-audience charter covering business ROI and technical architecture.
+- [docs/INDEX.md](docs/INDEX.md): Context routing table for token-efficient task navigation.
+
+## Quality Gates & Living Memory
+- [docs/wiki/metrics/baseline.json](docs/wiki/metrics/baseline.json): Machine-readable mathematical quality gate thresholds.
+- [docs/wiki/memory/handoff.md](docs/wiki/memory/handoff.md): Active inter-session memory ledger.
+- [docs/wiki/log.md](docs/wiki/log.md): Append-only historical project logbook.
+
+## Standards & Specifications
+- [docs/standards/coding_patterns.md](docs/standards/coding_patterns.md): Coding conventions and Clean Sizing limits.
+- [docs/standards/testing.md](docs/standards/testing.md): Automated testing and branch coverage guidelines.
+- [docs/standards/logging.md](docs/standards/logging.md): Logging standards.
+- [docs/DESIGN.md](docs/DESIGN.md): Design system tokens and architectural boundaries.
+- [docs/adr/](docs/adr/): Architecture Decision Records.
+- [docs/bdd/](docs/bdd/): Executable BDD Gherkin specifications.
+- [.agents/skills/](.agents/skills/): Canonical catalog of specialized agent skills.

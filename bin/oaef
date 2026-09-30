@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# OAEF CLI Entry Point
+# Author & Creator: Felipe Carvalho
+# License: Apache License 2.0
+# ==============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+case "$1" in
+  init)
+    shift
+    "$SCRIPT_DIR/install.sh" "$@"
+    ;;
+  export)
+    "$SCRIPT_DIR/bundle.sh"
+    ;;
+  sync)
+    echo "🔄 Running OAEF Multi-Tool Synchronization..."
+    if [ -f "tool/governance.dart" ]; then
+      dart run tool/governance.dart sync
+    elif [ -f "tool/governance.mjs" ]; then
+      node tool/governance.mjs sync
+    elif [ -f "tool/governance.py" ]; then
+      python3 tool/governance.py sync
+    elif [ -f "tool/governance.main.kts" ]; then
+      kotlinc -script tool/governance.main.kts sync
+    elif [ -f "tool/governance.sh" ]; then
+      bash tool/governance.sh sync
+    else
+      # Portable sync: copy AGENTS.md to CLAUDE.md
+      if [ -f "AGENTS.md" ]; then
+        echo "<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->" > CLAUDE.md
+        cat AGENTS.md >> CLAUDE.md
+        echo "✅ Synchronized AGENTS.md -> CLAUDE.md"
+      fi
+    fi
+    ;;
+  lint)
+    shift
+    if [ -f "tool/governance.dart" ]; then
+      dart run tool/governance.dart lint "$@"
+    elif [ -f "tool/governance.mjs" ]; then
+      node tool/governance.mjs lint "$@"
+    elif [ -f "tool/governance.py" ]; then
+      python3 tool/governance.py lint "$@"
+    elif [ -f "tool/governance.main.kts" ]; then
+      kotlinc -script tool/governance.main.kts lint "$@"
+    elif [ -f "tool/governance.sh" ]; then
+      bash tool/governance.sh lint "$@"
+    else
+      echo "No runtime governance script found in tool/. Run 'oaef init' first."
+      exit 1
+    fi
+    ;;
+  audit|quality-gate)
+    shift
+    if [ -f "tool/governance.dart" ]; then
+      dart run tool/governance.dart quality-gate "$@"
+    elif [ -f "tool/governance.mjs" ]; then
+      node tool/governance.mjs quality-gate "$@"
+    elif [ -f "tool/governance.py" ]; then
+      python3 tool/governance.py quality-gate "$@"
+    elif [ -f "tool/governance.main.kts" ]; then
+      kotlinc -script tool/governance.main.kts quality-gate "$@"
+    elif [ -f "tool/governance.sh" ]; then
+      bash tool/governance.sh quality-gate "$@"
+    else
+      echo "No runtime governance script found in tool/. Run 'oaef init' first."
+      exit 1
+    fi
+    ;;
+  version|-v|--version)
+    cat "$SCRIPT_DIR/VERSION" 2>/dev/null || echo "1.0.0"
+    ;;
+  *)
+    echo "Open Agentic Engineering Framework (OAEF) CLI"
+    echo "Usage: oaef <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  init        Run the interactive Discovery Interview to bootstrap a repository"
+    echo "  sync        Synchronize AGENTS.md with CLAUDE.md and IDE agent mirrors"
+    echo "  lint        Audit link integrity, cascade references, and secret scanning"
+    echo "  audit       Execute the multidimensional Quality Gate audit"
+    echo "  export      Bundle OAEF into a clean release ZIP archive"
+    echo "  version     Display the framework version"
+    ;;
+esac

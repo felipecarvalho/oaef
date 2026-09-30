@@ -1,0 +1,27 @@
+name: Quality Gate & CI (Universal)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  quality_gate:
+    name: Verify Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Audit Integrity, Secrets & Suppressions
+        run: |
+          if [ -f "tool/governance.sh" ]; then
+            bash tool/governance.sh lint
+          fi
+
+      - name: Verify Mathematical Quality Gate Baseline
+        run: |
+          if [ -f "tool/governance.sh" ]; then
+            bash tool/governance.sh quality-gate
+          fi

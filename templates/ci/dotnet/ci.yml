@@ -1,0 +1,29 @@
+name: Quality Gate & CI (.NET)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  quality_gate:
+    name: Verify Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build & Static Analysis
+        run: dotnet build --no-restore -warnaserror
+
+      - name: Run Tests with Coverage & Verify Quality Gate
+        run: dotnet test --no-build --collect:"XPlat Code Coverage"

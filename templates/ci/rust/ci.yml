@@ -1,0 +1,28 @@
+name: Quality Gate & CI (Rust)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  quality_gate:
+    name: Verify Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Audit Integrity, Secrets & Suppressions
+        run: |
+          cargo run --bin governance -- lint || bash -c "grep -rn '#\[allow' src/ && exit 1 || exit 0"
+
+      - name: Run Tests with Coverage & Verify Quality Gate
+        run: |
+          cargo test

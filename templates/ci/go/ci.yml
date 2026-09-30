@@ -1,0 +1,32 @@
+name: Quality Gate & CI (Go)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  quality_gate:
+    name: Verify Quality Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go Environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Install Dependencies
+        run: go mod download
+
+      - name: Audit Integrity, Secrets & Suppressions
+        run: |
+          go run tool/governance.go lint
+
+      - name: Run Tests with Coverage & Verify Quality Gate
+        run: |
+          go run tool/governance.go quality-gate
