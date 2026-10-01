@@ -14,7 +14,7 @@ OAEF provides three zero-friction installation paths depending on your workflow:
 | :--- | :--- | :--- |
 | **A human developer at the terminal** | **Path 1: Interactive Discovery Wizard** | Run `./install.sh` or `oaef init` |
 | **An autonomous AI agent in a CLI** | **Path 2: Non-Interactive Agent Flag** | Run `install.sh --target . --stack auto --strict` |
-| **An AI agent in a chat IDE** (Claude Code, Cursor, Windsurf) | **Path 3: 1-Prompt Adoption Recipe** | Copy-paste `ADOPTION_PROMPT.md` into the chat |
+| **An AI agent in a chat IDE** (Claude Code, Codex, Cursor, Windsurf, OpenCode) | **Path 3: 1-Prompt Adoption Recipe** | Copy-paste `ADOPTION_PROMPT.md` into the chat |
 
 ---
 
@@ -70,7 +70,7 @@ The wizard will prompt you with intelligent defaults:
 
 ## 🤖 Path 2: Autonomous Agent One-Liner (Non-Interactive)
 
-Autonomous agents (e.g. Claude Code, Google Antigravity, Gemini CLI, Cursor Background Agents) can bootstrap any repository in under 2 seconds without user input:
+Autonomous agents (e.g. Claude Code, Codex, OpenCode, Google Antigravity, Cursor Background Agents) can bootstrap any repository in under 2 seconds without user input:
 
 ```bash
 # From within the OAEF directory (or specify /path/to/oaef/install.sh):
@@ -94,7 +94,7 @@ oaef init --target /path/to/my-project --stack auto --strict --non-interactive
 
 ## 💬 Path 3: The 1-Prompt Adoption Recipe (Chat & Agent IDEs)
 
-If you are interacting with an AI coding assistant in a chat interface (Claude Code, Cursor Composer, Windsurf Cascade, Roo Code, ChatGPT, GitHub Copilot Chat):
+If you are interacting with an AI coding assistant in a chat interface (Claude Code, Codex, OpenCode, Cursor Composer, Windsurf Cascade, Roo Code, ChatGPT, GitHub Copilot Chat):
 
 1. Open a conversation with your agent inside your project workspace;
 2. Copy the contents of [`ADOPTION_PROMPT.md`](ADOPTION_PROMPT.md);
@@ -151,4 +151,4 @@ oaef audit   # or: dart run tool/governance.dart quality-gate
 **A:** **No.** OAEF operates under the **Zero-Docker / Zero-Daemon** philosophy. All governance scripts run natively in the project's own programming language in milliseconds.
 
 ### Q: Can my team use multiple AI agents simultaneously?
-**A:** **Yes.** `AGENTS.md` is the canonical root contract. Running `oaef sync` automatically keeps `CLAUDE.md` (Claude Code), `.cursorrules` (Cursor), `.windsurfrules` (Windsurf), and `.github/copilot-instructions.md` (Copilot) in mathematical parity.
+**A:** **Yes.** `AGENTS.md` is the canonical root contract, consumed natively by Codex, OpenCode, Antigravity, Cursor, Pi, and 20+ harnesses. `oaef sync` keeps the `CLAUDE.md` mirror (Claude Code) in exact parity, and the portable `.agents/skills/` catalog is auto-discovered by Codex, OpenCode, Antigravity, Cursor, Windsurf, Goose, and OpenHands. See [`docs/HARNESSES.md`](templates/base/docs/HARNESSES.md).

@@ -2,7 +2,7 @@
 <!-- To modify rules, edit AGENTS.md and run "oaef sync". -->
 
 # Working Contract for Autonomous AI Agents and Engineers
-> This document is the canonical contract for `react-native-starter`. Every AI agent (Claude Code, Antigravity, Gemini CLI, Cursor, Windsurf, Copilot, Roo Code) and human software engineer MUST adhere to the standards defined herein.
+> This document is the canonical contract for `react-native-starter`. Every AI agent and harness (Claude Code, Codex, OpenCode, Antigravity, Cursor, Pi, Cline, Goose, and other AGENTS.md-native harnesses) and human software engineer MUST adhere to the standards defined herein.
 
 ---
 
@@ -108,8 +108,9 @@ When performing tasks, consult and execute the specialized skills located in [`.
    - Never leave commented-out code blocks in committed files. Version control preserves history.
 
 ### 4.4 Protection of Mirror Instruction Files
-- Autonomous agents MUST NOT edit `CLAUDE.md`, `.cursorrules`, or `.windsurfrules` directly.
-- All rule modifications MUST be committed to `AGENTS.md`. Mirrors are synchronized automatically via `oaef sync`.
+- Autonomous agents MUST NOT edit `CLAUDE.md` directly.
+- All rule modifications MUST be committed to `AGENTS.md`. The mirror is synchronized automatically via `oaef sync`.
+- `AGENTS.md`-native harnesses (Codex, OpenCode, Antigravity, Cursor, Pi, and others) consume the canonical file directly and require no mirror; see [`docs/HARNESSES.md`](docs/HARNESSES.md).
 
 ### 4.5 Strict Living Documentation Parity
 - Adding, renaming, or removing an agent skill requires simultaneously updating `AGENTS.md` (§3), `docs/INDEX.md`, and `llms.txt`.

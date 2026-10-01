@@ -15,7 +15,7 @@ In traditional software development, the single most valuable asset of any organ
 3. **In Opaque Code**: The application runs, but nobody understands *why* it was built that way, leading to fear of modification, ballooning maintenance costs, and slow delivery cycles.
 
 ### The Risk of Ungoverned Generative AI
-With generative AI coding assistants (Claude Code, Antigravity, Cursor, Windsurf, Copilot), typing speed has accelerated tenfold. However, when an autonomous AI is tasked with coding without strict architectural guardrails:
+With generative AI coding assistants (Claude Code, Codex, OpenCode, Antigravity, Cursor, Windsurf, Copilot), typing speed has accelerated tenfold. However, when an autonomous AI is tasked with coding without strict architectural guardrails:
 * It generates **architectural debt**: Solving immediate bugs while creating five invisible systemic flaws;
 * It **invents rogue patterns**: Creating buttons outside brand design systems and neglecting translations or accessibility;
 * It **hallucinates business logic**: Deducing domain assumptions that contradict the company's real-world business models.

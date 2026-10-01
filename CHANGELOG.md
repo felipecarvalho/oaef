@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Agent Harness Compatibility Matrix (August 2026)**: new `docs/HARNESSES.md` with the verified Tier 1–3 harness landscape (Claude Code, Codex, OpenCode, Antigravity, Cursor, Pi, and 20+ more), instruction-file and skills support, and OAEF integration status.
+- **OpenCode native support**: OpenCode consumes `AGENTS.md` directly and auto-discovers `.agents/skills/`, requiring no mirror file.
+- Harness highlights added to `README.md`, `SPECIFICATION.md`, `INSTALL.md`, `ADOPTION_PROMPT.md`, `MANIFESTO.md`, and the installer output.
+
+### Changed
+- Mirror synchronization documentation aligned with current behavior: `oaef sync` generates the `CLAUDE.md` mirror; `AGENTS.md`-native harnesses require no mirror.
+- Gemini CLI references replaced by its successor, Antigravity CLI (`agy`), retired for personal accounts on 18 June 2026.
+
+---
+
 ## [1.0.0] - 2026-09-30
 
 ### Initial Release — Created by Felipe Carvalho

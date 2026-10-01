@@ -2,7 +2,7 @@
 <!-- To modify rules, edit AGENTS.md and run 'oaef sync'. -->
 
 # Working Contract for Autonomous AI Agents and Engineers
-> This document is the canonical contract for `dotnet-starter`. Every AI agent (Claude Code, Antigravity, Gemini CLI, Cursor, Windsurf, Copilot, Roo Code) and human software engineer MUST adhere to the standards defined herein.
+> This document is the canonical contract for `dotnet-starter`. Every AI agent and harness (Claude Code, Codex, OpenCode, Antigravity, Cursor, Pi, Cline, Goose, and other AGENTS.md-native harnesses) and human software engineer MUST adhere to the standards defined herein.
 
 ---
 

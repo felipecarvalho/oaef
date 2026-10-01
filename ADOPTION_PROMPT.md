@@ -1,6 +1,6 @@
 # OAEF 1-Prompt Universal Adoption Recipe
 
-> Copy and paste the prompt below into any AI coding assistant (Claude Code, Google Antigravity, Cursor Composer, Windsurf Cascade, Roo Code, GitHub Copilot Chat) inside your project's root directory.
+> Copy and paste the prompt below into any AI coding assistant (Claude Code, Codex, OpenCode, Google Antigravity, Cursor Composer, Windsurf Cascade, Roo Code, GitHub Copilot Chat) inside your project's root directory.
 
 ---
 
@@ -49,6 +49,7 @@ Create the living repository documentation tree under `docs/`:
 - `docs/wiki/memory/handoff.md`: Active session memory ledger with Concurrency Shield frontmatter.
 - `docs/wiki/log.md`: Append-only historical log with the genesis entry timestamped.
 - `.github/pull_request_template.md`: PR template with automation tags and zero empty checkboxes rule.
+- `docs/HARNESSES.md`: Verified agent harness compatibility matrix (August 2026) and OAEF integration status.
 
 CRITICAL ZERO-POLLUTION RULE: Install ONLY documentation and scripts relevant to this project's stack. Do NOT add files or skills from unrelated programming languages.
 

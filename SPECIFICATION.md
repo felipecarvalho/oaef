@@ -18,7 +18,8 @@ This document defines the formal specification for the **Open Agentic Engineerin
 The key words **"MUST"**, **"MUST NOT"**, **"REQUIRED"**, **"SHALL"**, **"SHALL NOT"**, **"SHOULD"**, **"SHOULD NOT"**, **"RECOMMENDED"**, **"MAY"**, and **"OPTIONAL"** in this document are to be interpreted as described in BCP 14 [RFC 2119] [RFC 8174].
 
 - **Living Repository**: A software repository containing its own machine-readable architecture, operational guidelines, executable contracts, and persistent inter-session memory.
-- **Autonomous Agent**: An LLM-driven coding agent (e.g. Claude Code, Google Antigravity, Gemini CLI, Cursor, Windsurf, Copilot, Codex) capable of executing file modifications, terminal commands, or git commits.
+- **Autonomous Agent**: An LLM-driven coding agent (e.g. Claude Code, Codex, OpenCode, Google Antigravity, Cursor, Windsurf, Copilot) capable of executing file modifications, terminal commands, or git commits.
+- **Harness**: The runtime system around a model — execution loop, tool registration, sandboxing, context management, and recovery — that turns it into a working agent (e.g. Claude Code, Codex, OpenCode, Antigravity, Cursor). The verified compatibility matrix is maintained in `docs/HARNESSES.md`.
 - **Inviolable Trust Hierarchy**: The deterministic priority ordering governing decision-making in the presence of conflicting information.
 - **Monotonic Ratchet**: An algorithmic rule ensuring that repository quality thresholds (test coverage, branch coverage, linting) can only increase and NEVER decrease over time.
 - **Zero-Pollution**: The invariant requiring consuming projects to contain strictly the files, skills, and runtimes applicable to their selected programming stack.
@@ -106,10 +107,11 @@ If an agent detects a discrepancy between documentation and code, or between two
 
 ## 5. Multi-Tool Synchronization Invariant
 
-To ensure seamless collaboration across different AI agent tools:
-1. `AGENTS.md` is the canonical root rulebook.
-2. `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, and `.github/copilot-instructions.md` MUST remain in exact functional parity with `AGENTS.md`.
-3. Running `oaef sync` MUST update and synchronize all tool-specific mirrors.
+To ensure seamless collaboration across different AI agent harnesses:
+1. `AGENTS.md` is the canonical root rulebook, consumed natively by `AGENTS.md`-native harnesses (Codex, OpenCode, Antigravity, Cursor, Pi, Cline, Goose, and others).
+2. `.agents/skills/` is the portable Agent Skills catalog, auto-discovered natively by harnesses such as Codex, OpenCode, Antigravity, Cursor, Windsurf, Goose, OpenHands, Cline, and Factory.
+3. `CLAUDE.md` MUST remain in exact functional parity with `AGENTS.md`. Running `oaef sync` MUST regenerate the `CLAUDE.md` mirror for Claude Code.
+4. Harnesses without native `AGENTS.md` support (e.g. Aider) MAY be pointed at it through their own configuration. The verified per-harness compatibility matrix is maintained in `docs/HARNESSES.md`.
 
 ---
 

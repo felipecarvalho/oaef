@@ -19,6 +19,7 @@ To optimize token efficiency and avoid context window pollution, **do not load a
 | :--- | :--- | :--- | :--- |
 | **Check autonomy or resolve contradictions** | [`AGENTS.md`](../AGENTS.md) | [`docs/wiki/memory/handoff.md`](wiki/memory/handoff.md) | [`.agents/skills/code-review/`](../.agents/skills/code-review/SKILL.md) |
 | **AI discovery / Understand project model** | [`llms.txt`](../llms.txt) | [`docs/MANIFESTO.md`](MANIFESTO.md) | — |
+| **Configure or switch agent harness** | [`docs/HARNESSES.md`](HARNESSES.md) | [`AGENTS.md`](../AGENTS.md) | — |
 | **Implement or modify a feature** | Main source directory | [`docs/standards/coding_patterns.md`](standards/coding_patterns.md) | [`.agents/skills/screen-builder/`](../.agents/skills/screen-builder/SKILL.md) |
 | **Create or update a UI component** | [`docs/DESIGN.md`](DESIGN.md) | Component source files | [`.agents/skills/component-author/`](../.agents/skills/component-author/SKILL.md) |
 | **Write or expand automated tests** | [`docs/standards/testing.md`](standards/testing.md) | [`docs/wiki/metrics/baseline.json`](wiki/metrics/baseline.json) | [`.agents/skills/test-generator/`](../.agents/skills/test-generator/SKILL.md) |

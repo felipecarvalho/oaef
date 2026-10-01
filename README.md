@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Architecture](https://img.shields.io/badge/Architecture-Living%20Repo-purple.svg)](MANIFESTO.md)
 [![Zero-Docker](https://img.shields.io/badge/Zero--Docker-Native%20Only-orange.svg)](#)
-[![Multi-Agent](https://img.shields.io/badge/Multi--Agent-Claude%20%7C%20Cursor%20%7C%20Antigravity%20%7C%20Windsurf-red.svg)](templates/base/AGENTS.md)
+[![Agent Harnesses](https://img.shields.io/badge/Agent%20Harnesses-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20OpenCode%20%C2%B7%20Antigravity%20%C2%B7%20Cursor%20%C2%B7%20Pi%20%C2%B7%20%2B20%20more-red.svg)](templates/base/docs/HARNESSES.md)
 
 > **The open-source standard for living, self-verifying, and context-engineered software repositories operated by autonomous AI agents and human engineers.**  
 > **Created and authored by [Felipe Carvalho](NOTICE).**
@@ -13,7 +13,7 @@
 
 ## ⚡ The Core Problem OAEF Solves
 
-Generative AI coding assistants (Claude Code, Google Antigravity, Cursor, Windsurf, Copilot) write code 10x faster than humans. However, when deployed in unregulated repositories, they produce:
+Generative AI coding assistants (Claude Code, Codex, OpenCode, Antigravity, Cursor, Windsurf, Copilot) write code 10x faster than humans. However, when deployed in unregulated repositories, they produce:
 1. **Spaghetti Code & Architectural Drift**: Generating inconsistent patterns, violating layer boundaries, and inflating file size;
 2. **Context Blindness & Token Waste**: Flooding context windows with thousands of irrelevant tokens or hallucinating missing files;
 3. **Silent Assumption Disasters**: Silently guessing business logic or resolving contradictions without human validation;
@@ -67,6 +67,26 @@ flowchart TD
 
 ---
 
+## 🧰 Agent Harness Compatibility (August 2026)
+
+OAEF is **harness-native**: the canonical `AGENTS.md` contract and the portable `.agents/skills/` catalog are the open standards consumed directly by the leading coding harnesses — **no per-tool rewriting required**.
+
+### Tier 1 Spotlight
+
+| Harness | Vendor | License | Native instruction file | OAEF integration |
+| :--- | :--- | :--- | :--- | :--- |
+| **Claude Code** | Anthropic | Proprietary | `CLAUDE.md` (reads `AGENTS.md` as fallback since v2.1.277) | `CLAUDE.md` mirror kept in parity by `oaef sync` |
+| **Codex** | OpenAI | Apache-2.0 | `AGENTS.md` | Native (contract + `.agents/skills/`) |
+| **OpenCode** | Anomaly | MIT | `AGENTS.md` | Native (contract + `.agents/skills/`) |
+| **Antigravity** (`agy`) | Google | Proprietary | `AGENTS.md` / `GEMINI.md` | Native (contract + `.agents/skills/`) |
+| **Cursor** | Anysphere | Proprietary | `AGENTS.md` + `.cursor/rules/` | Native (contract + `.agents/skills/`) |
+
+Plus **Pi**, **Cline**, **Qwen Code**, **Goose**, **DeepSeek Harness**, **OpenHands**, **Aider**, **Zed Agent**, **Grok Build**, **GitHub Copilot CLI**, **Windsurf**, **Hermes Agent**, **Factory Droid**, **Jules**, **Amp** and more — **20+ harnesses** in total. The full verified matrix (instruction files, skills directories, and integration status per tier) lives in [`docs/HARNESSES.md`](templates/base/docs/HARNESSES.md).
+
+> **Standard foundation**: `AGENTS.md` is stewarded by the **Agentic AI Foundation (Linux Foundation)** and used by 60,000+ open-source projects; `.agents/skills/` is the cross-harness skill convention. Gemini CLI was retired for personal accounts on **18 June 2026** and succeeded by Antigravity CLI (`agy`).
+
+---
+
 ## ⏱️ 60-Second Quickstart Demo
 
 Experience how OAEF initializes and audits a project in 60 seconds:
@@ -106,15 +126,16 @@ OAEF includes idiomatic, stack-adaptive agent skills and native governance engin
 
 When installed in a repository, OAEF establishes:
 
-- [`AGENTS.md`](templates/base/AGENTS.md): The canonical working contract for all AI coding agents and human engineers.
+- [`AGENTS.md`](templates/base/AGENTS.md): The canonical working contract for all AI coding agents and human engineers, consumed natively by 20+ harnesses (Codex, OpenCode, Antigravity, Cursor, Pi, and others).
 - [`CLAUDE.md`](templates/base/CLAUDE.md): Protected mirror for Claude Code with automated parity sync.
 - [`llms.txt`](templates/base/llms.txt): Machine-readable semantic discovery file for LLMs.
+- [`docs/HARNESSES.md`](templates/base/docs/HARNESSES.md): Verified agent harness compatibility matrix (Tier 1–3, August 2026) with instruction-file and skills support.
 - `docs/INDEX.md`: Task-based OKF router saving thousands of tokens per agent interaction.
 - `docs/MANIFESTO.md`: Dual-audience charter aligning business leadership and technical staff.
 - `docs/wiki/metrics/baseline.json`: Mathematical quality gate thresholds with the Monotonic Ratchet.
 - `docs/wiki/memory/handoff.md`: Inter-session memory ledger with multi-agent concurrency shielding.
 - `docs/wiki/log.md`: Immutable append-only historical logbook.
-- `.agents/skills/`: 10 stack-tailored agent skills providing deterministic instructions.
+- `.agents/skills/`: 10 stack-tailored agent skills providing deterministic instructions, auto-discovered natively by Codex, OpenCode, Antigravity, Cursor, Windsurf, and other harnesses.
 - `tool/governance.*`: Zero-Docker native CLI script for linting, quality gates, and parity audits.
 - `.github/`: Open-source community PR template, Issue templates (bugs, features, ADRs), and stack-tailored CI workflows.
 - `CONTRIBUTING.md` & `SECURITY.md`: Canonical contribution guidelines and vulnerability disclosure policy.
