@@ -17,6 +17,9 @@ void main(List<String> args) async {
       await runMetricsReport();
     case 'lint':
       await runLint();
+    case 'conform':
+    case 'doctor':
+      await runConform();
     case 'sync':
       await runSync();
     default:
@@ -34,6 +37,7 @@ void _printUsage() {
     ..writeln('  quality-gate [--record]  Audit Quality Gates & ratchet baseline')
     ..writeln('  metrics                  Display historical metrics report')
     ..writeln('  lint                     Audit links, cascade references & secrets')
+    ..writeln('  doctor                   Audit OAEF conformance (structure, skills, mirrors)')
     ..writeln('  sync                     Synchronize AGENTS.md to mirrors');
 }
 
@@ -45,7 +49,6 @@ Future<void> runQualityGate({bool record = false}) async {
   stdout.writeln('\n🔍 Initiating OAEF Quality Gate Audit...');
 
   final baselineFile = File('docs/wiki/metrics/baseline.json');
-  final historyFile = File('docs/wiki/metrics/history.json');
 
   var baseline = <String, dynamic>{};
   if (baselineFile.existsSync()) {
@@ -61,7 +64,6 @@ Future<void> runQualityGate({bool record = false}) async {
 
   final sizingConfig = baseline['clean_sizing'] as Map<String, dynamic>? ?? {};
   final maxFileLines = (sizingConfig['file_max_lines'] as num?)?.toInt() ?? 300;
-  final maxMethodLines = (sizingConfig['method_max_lines'] as num?)?.toInt() ?? 50;
 
   // 1. Run Tests with Coverage
   stdout.writeln('ℹ️  Running test suite with coverage...');
@@ -89,18 +91,29 @@ Future<void> runQualityGate({bool record = false}) async {
   final lcovFile = File('coverage/lcov.info');
   var linesFound = 0;
   var linesHit = 0;
+  var branchesFound = 0;
+  var branchesHit = 0;
   if (lcovFile.existsSync()) {
     for (final line in lcovFile.readAsLinesSync()) {
       if (line.startsWith('LF:')) {
         linesFound += int.tryParse(line.substring(3)) ?? 0;
       } else if (line.startsWith('LH:')) {
         linesHit += int.tryParse(line.substring(3)) ?? 0;
+      } else if (line.startsWith('BRF:')) {
+        branchesFound += int.tryParse(line.substring(4)) ?? 0;
+      } else if (line.startsWith('BRH:')) {
+        branchesHit += int.tryParse(line.substring(4)) ?? 0;
       }
     }
   }
 
   final linePercent = linesFound == 0 ? 100.0 : (linesHit / linesFound) * 100.0;
   stdout.writeln('📊 Line Coverage: ${linePercent.toStringAsFixed(1)}% (Floor: $minLineCov%)');
+
+  final branchPercent = branchesFound == 0 ? 100.0 : (branchesHit / branchesFound) * 100.0;
+  if (branchesFound > 0) {
+    stdout.writeln('📊 Branch Coverage: ${branchPercent.toStringAsFixed(1)}% (Floor: $minBranchCov%)');
+  }
 
   // 3. Clean Sizing Audit
   var oversizedFiles = 0;
@@ -121,6 +134,10 @@ Future<void> runQualityGate({bool record = false}) async {
   var passed = true;
   if (linePercent < minLineCov) {
     stderr.writeln('❌ Quality Gate Failed: Line coverage $linePercent% < $minLineCov%');
+    passed = false;
+  }
+  if (branchesFound > 0 && branchPercent < minBranchCov) {
+    stderr.writeln('❌ Quality Gate Failed: Branch coverage $branchPercent% < $minBranchCov%');
     passed = false;
   }
   if (oversizedFiles > 0) {
@@ -166,14 +183,8 @@ Future<void> runLint() async {
   final agentsFile = File('AGENTS.md');
   final claudeFile = File('CLAUDE.md');
   if (agentsFile.existsSync() && claudeFile.existsSync()) {
-    final agentsText = agentsFile.readAsStringSync().trim();
-    var claudeText = claudeFile.readAsStringSync().trim();
-    if (claudeText.startsWith('<!--')) {
-      final bannerEnd = claudeText.indexOf('-->');
-      if (bannerEnd != -1) {
-        claudeText = claudeText.substring(bannerEnd + 3).trim();
-      }
-    }
+    final agentsText = normalizeMirrorText(agentsFile.readAsStringSync());
+    final claudeText = normalizeMirrorText(claudeFile.readAsStringSync());
     if (agentsText != claudeText) {
       stderr.writeln('❌ [LINT] CLAUDE.md diverged from AGENTS.md. Run "oaef sync".');
       failed = true;
@@ -229,6 +240,86 @@ Future<void> runLint() async {
     exit(1);
   } else {
     stdout.writeln('✅ [LINT] All integrity and secret audits passed cleanly.\n');
+  }
+}
+
+String normalizeMirrorText(String text) {
+  return text
+      .split('\n')
+      .where((line) => !line.startsWith('<!--'))
+      .join('')
+      .replaceAll(RegExp(r'\s+'), '');
+}
+
+Future<void> runConform() async {
+  stdout.writeln('🩺 OAEF Conformance Audit (doctor)...');
+  const requiredFiles = [
+    'AGENTS.md', 'CLAUDE.md', 'llms.txt', 'oaef.context.json',
+    'docs/INDEX.md', 'docs/MANIFESTO.md', 'docs/DESIGN.md',
+    'docs/standards/coding_patterns.md', 'docs/standards/testing.md', 'docs/standards/logging.md',
+    'docs/wiki/metrics/baseline.json', 'docs/wiki/memory/handoff.md', 'docs/wiki/log.md',
+    'docs/HARNESSES.md',
+    '.github/workflows/ci.yml', '.github/pull_request_template.md',
+    '.gitignore', 'CONTRIBUTING.md', 'SECURITY.md',
+  ];
+  const skills = [
+    'architecture-audit', 'code-review', 'collect-coverage', 'component-author',
+    'fix-layout-issues', 'nullable-types', 'run-static-analysis', 'screen-builder',
+    'test-generator', 'ui-preview', 'conformance-audit',
+  ];
+  const runtimes = [
+    'tool/governance.sh', 'tool/governance.mjs', 'tool/governance.py', 'tool/governance.dart',
+    'tool/governance.go', 'tool/governance.rs', 'tool/governance.main.kts', 'tool/governance.swift',
+    'tool/Governance.cs',
+  ];
+
+  var checks = 0;
+  var passed = 0;
+  var failed = false;
+
+  void check(bool condition, String label) {
+    checks++;
+    if (condition) {
+      passed++;
+      stdout.writeln('✅ $label');
+    } else {
+      stderr.writeln('❌ $label');
+      failed = true;
+    }
+  }
+
+  for (final requiredFile in requiredFiles) {
+    check(File(requiredFile).existsSync(), '$requiredFile present');
+  }
+  for (final skill in skills) {
+    check(File('.agents/skills/$skill/SKILL.md').existsSync(), '.agents/skills/$skill/SKILL.md present');
+  }
+  check(runtimes.any((runtime) => File(runtime).existsSync()), 'governance runtime present in tool/');
+
+  final agentsFile = File('AGENTS.md');
+  final claudeFile = File('CLAUDE.md');
+  if (agentsFile.existsSync() && claudeFile.existsSync()) {
+    check(
+      normalizeMirrorText(agentsFile.readAsStringSync()) == normalizeMirrorText(claudeFile.readAsStringSync()),
+      'CLAUDE.md mirror parity verified',
+    );
+  } else {
+    check(false, 'mirror parity not verifiable (missing AGENTS.md or CLAUDE.md)');
+  }
+
+  final placeholderPattern = RegExp(r'\{\{PROJECT_NAME\}\}|\{\{TECH_STACK\}\}|\{\{STACK_SPECIFIC_RULES\}\}');
+  var placeholderHits = false;
+  for (final candidate in ['AGENTS.md', 'llms.txt']) {
+    final candidateFile = File(candidate);
+    if (candidateFile.existsSync() && placeholderPattern.hasMatch(candidateFile.readAsStringSync())) {
+      placeholderHits = true;
+    }
+  }
+  check(!placeholderHits, 'no unresolved template placeholders');
+
+  stdout.writeln('\n📊 Conformance: $passed/$checks checks passed');
+  if (failed) {
+    exit(1);
   }
 }
 

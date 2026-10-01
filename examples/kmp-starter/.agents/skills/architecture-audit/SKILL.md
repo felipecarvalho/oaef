@@ -21,3 +21,8 @@ Audit layer coupling, source-set boundaries (commonMain vs platform targets), an
 - Verify that platform source sets (androidMain, iosMain, desktopMain) contain solely hardware/OS bridging via expect/actual or interfaces.
 - Enforce that Android Context and iOS UIViewController never leak into commonMain.
 - Check Clean Sizing bounds across all modules (<=300 LOC/file).
+
+---
+
+## Repository Conformance Gate
+Before approving this review, run `oaef doctor` (native: `tool/governance.* doctor`) and `oaef lint`. A failing conformance or lint check blocks approval; unresolved findings MUST be recorded in `docs/wiki/memory/handoff.md` per the Inviolable Trust Hierarchy.

@@ -56,7 +56,6 @@ htmlcov/
 .coverage
 
 # Go
-bin/
 *.exe
 
 # Rust
@@ -73,6 +72,7 @@ build/
 *.xcworkspace/xcuserdata/
 DerivedData/
 
-# C# / .NET
-bin/
+# C# / .NET (nested bin/ are build outputs; the root bin/oaef CLI is preserved)
+**/bin/
+!/bin/
 obj/

@@ -24,6 +24,8 @@ def main():
         run_metrics()
     elif cmd == "lint":
         run_lint()
+    elif cmd in ("conform", "doctor"):
+        run_conform()
     elif cmd == "sync":
         run_sync()
     else:
@@ -38,6 +40,7 @@ Commands:
   quality-gate [--record]  Audit Quality Gates & ratchet baseline
   metrics                  Display historical metrics report
   lint                     Audit links, cascade references & secrets
+  doctor                   Audit OAEF conformance (structure, skills, mirrors)
   sync                     Synchronize AGENTS.md to mirrors""")
 
 def run_quality_gate(record=False):
@@ -109,13 +112,9 @@ def run_lint():
     # Mirror parity
     if os.path.exists("AGENTS.md") and os.path.exists("CLAUDE.md"):
         with open("AGENTS.md", "r", encoding="utf-8") as f:
-            agents = f.read().strip()
+            agents = normalize_mirror_text(f.read())
         with open("CLAUDE.md", "r", encoding="utf-8") as f:
-            claude = f.read().strip()
-        if claude.startswith("<!--"):
-            end = claude.find("-->")
-            if end != -1:
-                claude = claude[end+3:].strip()
+            claude = normalize_mirror_text(f.read())
         if agents != claude:
             print("❌ [LINT] CLAUDE.md diverged from AGENTS.md.", file=sys.stderr)
             failed = True
@@ -172,6 +171,70 @@ def run_lint():
     if failed:
         sys.exit(1)
     print("✅ [LINT] All audits passed cleanly.")
+
+def normalize_mirror_text(text):
+    lines = [line for line in text.splitlines() if not line.startswith("<!--")]
+    return re.sub(r"\s+", "", "".join(lines))
+
+def run_conform():
+    print("🩺 OAEF Conformance Audit (doctor)...")
+    required_files = [
+        "AGENTS.md", "CLAUDE.md", "llms.txt", "oaef.context.json",
+        "docs/INDEX.md", "docs/MANIFESTO.md", "docs/DESIGN.md",
+        "docs/standards/coding_patterns.md", "docs/standards/testing.md", "docs/standards/logging.md",
+        "docs/wiki/metrics/baseline.json", "docs/wiki/memory/handoff.md", "docs/wiki/log.md",
+        "docs/HARNESSES.md",
+        ".github/workflows/ci.yml", ".github/pull_request_template.md",
+        ".gitignore", "CONTRIBUTING.md", "SECURITY.md",
+    ]
+    skills = [
+        "architecture-audit", "code-review", "collect-coverage", "component-author",
+        "fix-layout-issues", "nullable-types", "run-static-analysis", "screen-builder",
+        "test-generator", "ui-preview", "conformance-audit",
+    ]
+    runtimes = [
+        "tool/governance.sh", "tool/governance.mjs", "tool/governance.py", "tool/governance.dart",
+        "tool/governance.go", "tool/governance.rs", "tool/governance.main.kts", "tool/governance.swift",
+        "tool/Governance.cs",
+    ]
+    placeholder_pattern = re.compile(r"\{\{PROJECT_NAME\}\}|\{\{TECH_STACK\}\}|\{\{STACK_SPECIFIC_RULES\}\}")
+    state = {"checks": 0, "passed": 0, "failed": False}
+
+    def check(condition, label):
+        state["checks"] += 1
+        if condition:
+            state["passed"] += 1
+            print(f"✅ {label}")
+        else:
+            print(f"❌ {label}", file=sys.stderr)
+            state["failed"] = True
+
+    for file in required_files:
+        check(os.path.exists(file), f"{file} present")
+    for skill in skills:
+        check(os.path.exists(os.path.join(".agents", "skills", skill, "SKILL.md")), f".agents/skills/{skill}/SKILL.md present")
+    check(any(os.path.exists(runtime) for runtime in runtimes), "governance runtime present in tool/")
+
+    if os.path.exists("AGENTS.md") and os.path.exists("CLAUDE.md"):
+        with open("AGENTS.md", "r", encoding="utf-8") as f:
+            agents_text = normalize_mirror_text(f.read())
+        with open("CLAUDE.md", "r", encoding="utf-8") as f:
+            claude_text = normalize_mirror_text(f.read())
+        check(agents_text == claude_text, "CLAUDE.md mirror parity verified")
+    else:
+        check(False, "mirror parity not verifiable (missing AGENTS.md or CLAUDE.md)")
+
+    placeholder_hits = False
+    for candidate in ("AGENTS.md", "llms.txt"):
+        if os.path.exists(candidate):
+            with open(candidate, "r", encoding="utf-8", errors="ignore") as f:
+                if placeholder_pattern.search(f.read()):
+                    placeholder_hits = True
+    check(not placeholder_hits, "no unresolved template placeholders")
+
+    print(f"\n📊 Conformance: {state['passed']}/{state['checks']} checks passed")
+    if state["failed"]:
+        sys.exit(1)
 
 def run_sync():
     if not os.path.exists("AGENTS.md"):

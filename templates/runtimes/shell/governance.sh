@@ -83,6 +83,91 @@ case "$COMMAND" in
     echo "✅ [LINT] All audits passed cleanly."
     ;;
 
+  conform|doctor)
+    echo "🩺 OAEF Conformance Audit (doctor)..."
+    CHECKS=0
+    PASSED=0
+    FAILED=0
+
+    check_file() {
+      CHECKS=$((CHECKS + 1))
+      if [ -f "$1" ]; then
+        PASSED=$((PASSED + 1))
+        echo "✅ $1 present"
+      else
+        echo "❌ $1 missing" >&2
+        FAILED=1
+      fi
+    }
+
+    check_file "AGENTS.md"
+    check_file "CLAUDE.md"
+    check_file "llms.txt"
+    check_file "oaef.context.json"
+    check_file "docs/INDEX.md"
+    check_file "docs/MANIFESTO.md"
+    check_file "docs/DESIGN.md"
+    check_file "docs/standards/coding_patterns.md"
+    check_file "docs/standards/testing.md"
+    check_file "docs/standards/logging.md"
+    check_file "docs/wiki/metrics/baseline.json"
+    check_file "docs/wiki/memory/handoff.md"
+    check_file "docs/wiki/log.md"
+    check_file "docs/HARNESSES.md"
+    check_file ".github/workflows/ci.yml"
+    check_file ".github/pull_request_template.md"
+    check_file ".gitignore"
+    check_file "CONTRIBUTING.md"
+    check_file "SECURITY.md"
+
+    for skill_name in architecture-audit code-review collect-coverage component-author fix-layout-issues nullable-types run-static-analysis screen-builder test-generator ui-preview conformance-audit; do
+      check_file ".agents/skills/$skill_name/SKILL.md"
+    done
+
+    CHECKS=$((CHECKS + 1))
+    RUNTIME_FOUND="no"
+    for runtime_file in tool/governance.sh tool/governance.mjs tool/governance.py tool/governance.dart tool/governance.go tool/governance.rs tool/governance.main.kts tool/governance.swift tool/Governance.cs; do
+      [ -f "$runtime_file" ] && RUNTIME_FOUND="yes"
+    done
+    if [ "$RUNTIME_FOUND" = "yes" ]; then
+      PASSED=$((PASSED + 1))
+      echo "✅ governance runtime present in tool/"
+    else
+      echo "❌ governance runtime missing in tool/" >&2
+      FAILED=1
+    fi
+
+    CHECKS=$((CHECKS + 1))
+    if [ -f "AGENTS.md" ] && [ -f "CLAUDE.md" ]; then
+      MIRROR_DIFF=$(diff -u <(grep -v "^<!--" AGENTS.md | tr -d '\r\n ') <(grep -v "^<!--" CLAUDE.md | tr -d '\r\n ') || true)
+      if [ -n "$MIRROR_DIFF" ]; then
+        echo "❌ CLAUDE.md diverged from AGENTS.md (run 'oaef sync')" >&2
+        FAILED=1
+      else
+        PASSED=$((PASSED + 1))
+        echo "✅ CLAUDE.md mirror parity verified"
+      fi
+    else
+      echo "❌ mirror parity not verifiable (missing AGENTS.md or CLAUDE.md)" >&2
+      FAILED=1
+    fi
+
+    CHECKS=$((CHECKS + 1))
+    if grep -q "{{PROJECT_NAME}}\|{{TECH_STACK}}\|{{STACK_SPECIFIC_RULES}}" AGENTS.md llms.txt 2>/dev/null; then
+      echo "❌ unresolved template placeholders found in AGENTS.md/llms.txt" >&2
+      FAILED=1
+    else
+      PASSED=$((PASSED + 1))
+      echo "✅ no unresolved template placeholders"
+    fi
+
+    echo ""
+    echo "📊 Conformance: $PASSED/$CHECKS checks passed"
+    if [ "$FAILED" -ne 0 ]; then
+      exit 1
+    fi
+    ;;
+
   sync)
     if [ -f "AGENTS.md" ]; then
       echo "<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->" > CLAUDE.md
@@ -94,7 +179,7 @@ case "$COMMAND" in
     ;;
 
   *)
-    echo "Usage: bash tool/governance.sh [quality-gate|metrics|lint|sync]"
+    echo "Usage: bash tool/governance.sh [quality-gate|metrics|lint|sync|doctor]"
     exit 1
     ;;
 esac

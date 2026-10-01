@@ -135,7 +135,7 @@ When installed in a repository, OAEF establishes:
 - `docs/wiki/metrics/baseline.json`: Mathematical quality gate thresholds with the Monotonic Ratchet.
 - `docs/wiki/memory/handoff.md`: Inter-session memory ledger with multi-agent concurrency shielding.
 - `docs/wiki/log.md`: Immutable append-only historical logbook.
-- `.agents/skills/`: 10 stack-tailored agent skills providing deterministic instructions, auto-discovered natively by Codex, OpenCode, Antigravity, Cursor, Windsurf, and other harnesses.
+- `.agents/skills/`: 11 stack-tailored agent skills providing deterministic instructions, auto-discovered natively by Codex, OpenCode, Antigravity, Cursor, Windsurf, and other harnesses.
 - `tool/governance.*`: Zero-Docker native CLI script for linting, quality gates, and parity audits.
 - `.github/`: Open-source community PR template, Issue templates (bugs, features, ADRs), and stack-tailored CI workflows.
 - `CONTRIBUTING.md` & `SECURITY.md`: Canonical contribution guidelines and vulnerability disclosure policy.

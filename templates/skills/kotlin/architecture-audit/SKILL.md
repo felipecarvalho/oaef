@@ -20,3 +20,8 @@ Audit layer coupling, dependency direction, and architectural modularity in Kotl
 - Dependencies must point inwards towards core domain contracts.
 - High-level business logic must not depend on low-level UI or database details.
 - Audit file sizes and cyclomatic complexity using `Detekt cyclomatic complexity analyzer`.
+
+---
+
+## Repository Conformance Gate
+Before approving this review, run `oaef doctor` (native: `tool/governance.* doctor`) and `oaef lint`. A failing conformance or lint check blocks approval; unresolved findings MUST be recorded in `docs/wiki/memory/handoff.md` per the Inviolable Trust Hierarchy.

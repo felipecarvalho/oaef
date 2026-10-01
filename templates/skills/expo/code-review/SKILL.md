@@ -20,3 +20,8 @@ Conduct rigorous pre-PR self-audits verifying OAEF Quality Gates, Expo Router ru
 - Verify zero unallowed linter ignore directives.
 - Ensure Clean Sizing compliance (files <= 300 LOC, functions <= 50 LOC).
 - Check that npx expo-doctor reports zero dependency or configuration issues.
+
+---
+
+## Repository Conformance Gate
+Before approving this review, run `oaef doctor` (native: `tool/governance.* doctor`) and `oaef lint`. A failing conformance or lint check blocks approval; unresolved findings MUST be recorded in `docs/wiki/memory/handoff.md` per the Inviolable Trust Hierarchy.

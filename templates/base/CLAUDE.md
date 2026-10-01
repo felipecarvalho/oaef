@@ -58,6 +58,7 @@ When performing tasks, consult and execute the specialized skills located in [`.
 * [`screen-builder`](.agents/skills/screen-builder/SKILL.md): Vertical feature construction respecting Clean Sizing.
 * [`test-generator`](.agents/skills/test-generator/SKILL.md): High-coverage unit, integration, and branch testing.
 * [`ui-preview`](.agents/skills/ui-preview/SKILL.md): Isolated component previews and rapid feedback.
+* [`conformance-audit`](.agents/skills/conformance-audit/SKILL.md): Repository conformance audit (structure, skills, mirrors, community files).
 
 ---
 
@@ -171,3 +172,26 @@ The most critical failure mode in autonomous software development is silent assu
 | **Renamed or Deleted Document** | All cross-referenced links in `docs/`, `AGENTS.md`, `llms.txt` | Audited via `oaef lint`. |
 | **Session Completion / Handoff** | [`docs/wiki/memory/handoff.md`](docs/wiki/memory/handoff.md) | Verified before task finish. |
 | **Milestone Achieved** | [`docs/wiki/log.md`](docs/wiki/log.md) | Append-only record. |
+
+---
+
+## 9. Adoption, Auditing & Conformance Commands
+
+### 9.1 Adopting an Existing (Legacy) Repository
+1. Discover non-destructively: `oaef init --target . --stack auto --legacy --dry-run`.
+2. Review conflicts — existing files are preserved and proposals are written as `<file>.oaef-new`.
+3. Apply with `oaef init --target . --stack auto --legacy --backup` (recommended) or `--force` only after explicit human approval.
+4. With `--legacy`, the measured coverage (lcov/cobertura/jacoco/coverlet artifacts) becomes the Monotonic Ratchet floor; quality may only increase.
+
+### 9.2 Conformance Audit — `oaef doctor`
+- `oaef doctor` (alias `conform`) verifies the repository contains every OAEF artifact: contract, `CLAUDE.md` mirror parity, docs tree, baseline, memory ledger, the 11 skills, the governance runtime, and community files.
+- Every `❌` MUST be resolved before the task is considered complete; unresolved findings MUST be recorded in [`docs/wiki/memory/handoff.md`](docs/wiki/memory/handoff.md).
+
+### 9.3 Quality Audits
+- `oaef audit` — multidimensional Quality Gate (coverage, duplication, clean sizing, suppressions).
+- `oaef lint` — mirror parity, cascade references, secret scanning, anti-suppression.
+- `oaef metrics` — display the current baseline thresholds.
+
+### 9.4 Failure Protocol
+- Follow the Inviolable Trust Hierarchy: fix the code, never silence the gate (zero suppressions).
+- Contradictions MUST be recorded in `handoff.md` and escalated to the human engineer for arbitration.

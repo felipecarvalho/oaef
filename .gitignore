@@ -49,8 +49,9 @@ htmlcov/
 .next/
 .build/
 
-# Language-Specific Binaries Scoped (Preserve Root CLI bin/oaef)
-examples/**/bin/
+# Language-Specific Binaries Scoped (Preserve Root CLI and example CLIs bin/oaef)
+examples/**/bin/*
+!examples/**/bin/oaef
 **/obj/
 !bin/oaef
 

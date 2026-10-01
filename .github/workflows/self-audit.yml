@@ -1,0 +1,34 @@
+name: OAEF Self-Audit (Framework Conformance)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  self_audit:
+    name: Install & Audit (${{ matrix.stack }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack:
+          - dart-flutter
+          - react-native
+          - expo
+          - typescript-web
+          - kotlin-multiplatform
+          - kotlin
+          - python
+          - go
+          - rust
+          - swift
+          - dotnet
+          - universal
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install & audit stack in a sandbox
+        run: bash scripts/self-audit.sh --stack ${{ matrix.stack }}

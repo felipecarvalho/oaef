@@ -20,3 +20,8 @@ Audit Expo Router file structure, Config Plugins compliance, and managed workflo
 - Verify route files in app/ act strictly as coordinators and delegate logic to src/.
 - Ensure all native configurations are declared via Expo Config Plugins in app.json / app.config.ts.
 - Prohibit direct edits to transient prebuild folders (android/ and ios/).
+
+---
+
+## Repository Conformance Gate
+Before approving this review, run `oaef doctor` (native: `tool/governance.* doctor`) and `oaef lint`. A failing conformance or lint check blocks approval; unresolved findings MUST be recorded in `docs/wiki/memory/handoff.md` per the Inviolable Trust Hierarchy.

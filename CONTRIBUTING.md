@@ -54,14 +54,14 @@ chore: update release bundling script
 ### Step 3: Local Verification
 Before opening a Pull Request, run the local verification suite:
 ```bash
-# Execute Quality Gate audit
-./bin/oaef audit
+# Full framework self-audit: installs every stack in a sandbox and runs doctor + lint
+./scripts/self-audit.sh
 
-# Verify documentation link integrity, mirrors, and secret scanning
-./bin/oaef lint
-
-# Synchronize AGENTS.md with mirrors
-./bin/oaef sync
+# Inside an OAEF-governed project (after `oaef init`), the CLI exposes the same audits:
+./bin/oaef doctor   # conformance: structure, skills, mirrors, community files
+./bin/oaef lint     # link integrity, cascade references, and secret scanning
+./bin/oaef audit    # multidimensional Quality Gate audit
+./bin/oaef sync     # synchronize AGENTS.md with the CLAUDE.md mirror
 ```
 All checks must pass with zero errors, zero warnings, and zero secret detections.
 

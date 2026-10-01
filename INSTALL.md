@@ -8,13 +8,14 @@
 
 ## 🧭 Choose Your Installation Path
 
-OAEF provides three zero-friction installation paths depending on your workflow:
+OAEF provides four zero-friction installation paths depending on your workflow:
 
 | If you are... | Use this path | Command / Method |
 | :--- | :--- | :--- |
 | **A human developer at the terminal** | **Path 1: Interactive Discovery Wizard** | Run `./install.sh` or `oaef init` |
 | **An autonomous AI agent in a CLI** | **Path 2: Non-Interactive Agent Flag** | Run `install.sh --target . --stack auto --strict` |
 | **An AI agent in a chat IDE** (Claude Code, Codex, Cursor, Windsurf, OpenCode) | **Path 3: 1-Prompt Adoption Recipe** | Copy-paste `ADOPTION_PROMPT.md` into the chat |
+| **An existing (legacy/brownfield) repository** | **Path 4: Legacy-Safe Adoption** | Run `install.sh --legacy --dry-run`, review, then apply |
 
 ---
 
@@ -58,7 +59,7 @@ The wizard will prompt you with intelligent defaults:
    - `[2] Standard`: 80% line coverage, 75% branches, clean sizing (<=400 LOC/file).
    - `[3] Legacy Onboarding`: Sets baseline thresholds equal to current project metrics, locking in a monotonic ratcheting rule (quality can only increase, never decrease).
 6. **Install Stack-Adaptive Agent Skills**:
-   - `Install the 10 stack-tailored skills into .agents/skills/? [Y/n] (Default: Y)`
+   - `Install the 11 stack-tailored skills into .agents/skills/? [Y/n] (Default: Y)`
 
 ### What Happens Behind the Scenes:
 - **Zero-Pollution Guarantee**: ONLY files for your selected language are copied. No stray templates or foreign language files are added.
@@ -87,6 +88,11 @@ oaef init --target /path/to/my-project --stack auto --strict --non-interactive
 | `--stack <name>` | Explicit stack: `dart-flutter`, `react-native`, `expo`, `typescript-web`, `kotlin-multiplatform`, `kotlin`, `python`, `go`, `rust`, `swift`, `dotnet`, `universal`, or `auto` | `auto` |
 | `--strict` | Apply strict 95%/90% mathematical Quality Gates | Enabled |
 | `--standard` | Apply standard 80%/75% Quality Gates | Disabled |
+| `--legacy` | Measure current coverage and lock it as the Monotonic Ratchet floor | Disabled |
+| `--coverage <pct>` | Explicit measured line coverage for `--legacy` (overrides detection) | Auto-detected |
+| `--dry-run` | Report every action without writing anything to disk | Disabled |
+| `--backup` | Back up existing files to `.oaef/backup/<timestamp>/` before overwriting | Disabled |
+| `--force` | Overwrite conflicting files (default: keep existing and propose `<file>.oaef-new`) | Disabled |
 | `--no-skills` | Skip installing `.agents/skills/` | Skills installed by default |
 | `--non-interactive` | Disable interactive prompts; use auto-detected defaults | Interactive if TTY |
 
@@ -101,6 +107,31 @@ If you are interacting with an AI coding assistant in a chat interface (Claude C
 3. Paste the prompt into the chat and press Enter.
 
 The agent will execute an autonomous discovery phase, inspect your code, establish the OAEF directory structure, calibrate your baseline, and commit the initial living memory ledger.
+
+---
+
+## 🏗️ Path 4: Legacy-Safe Adoption (Existing / Brownfield Projects)
+
+Applying OAEF to a repository that already has code, docs, or agent contracts is **non-destructive by default**. Existing files are never overwritten; conflicts are preserved and proposed for human review.
+
+```bash
+# 1. Preview every action without writing anything:
+./install.sh --target /path/to/existing-project --stack auto --legacy --dry-run
+
+# 2. Apply (existing files preserved; conflicts proposed as <file>.oaef-new):
+./install.sh --target /path/to/existing-project --stack auto --legacy
+
+# 3. Optional: review each proposal, merge what you want, then delete the .oaef-new files.
+```
+
+### Legacy Guarantees
+
+- **Never overwrites by default**: `AGENTS.md`, `CLAUDE.md`, `docs/*`, `.github/*`, `CONTRIBUTING.md`, `SECURITY.md`, and `llms.txt` are preserved when they already exist; differing versions are written as `<file>.oaef-new`.
+- **Ratchet protected**: an existing `docs/wiki/metrics/baseline.json` is never reset; existing `handoff.md`/`log.md` memory is never wiped; an existing `oaef.context.json` is preserved.
+- **User-owned `CLAUDE.md` respected**: the mirror is only regenerated when the file is absent or carries the OAEF `AUTO-GENERATED MIRROR` banner.
+- **Interactive wizard** asks once when artifacts are detected: `[K]eep (default) / [B]ackup & overwrite / [A]bort`.
+- **`--backup`** copies every overwritten file to `.oaef/backup/<timestamp>/`; **`--force`** opts into overwriting.
+- **Measured legacy baseline**: with `--legacy`, OAEF measures the current coverage from existing artifacts — `lcov.info`, `coverage/coverage-summary.json`, `coverage.xml`, `TestResults/coverage.cobertura.xml`, or `build/reports/jacoco|kover/*.xml` — and locks lines/branches as the ratchet floor. If no artifact is found, conservative floors (50%/40%) apply and `--coverage <pct>` can supply the value explicitly.
 
 ---
 
@@ -130,13 +161,16 @@ Zero template files (`.template`), zero unselected language runtimes, and zero u
 Once installed, verify that your living repository is active and compliant:
 
 ```bash
-# 1. Run the unified agent sync (ensures AGENTS.md, CLAUDE.md, and IDE rules match):
+# 1. Run the conformance audit (structure, mirror parity, skills, community files):
+oaef doctor  # or: bash tool/governance.sh doctor / node tool/governance.mjs doctor
+
+# 2. Run the unified agent sync (ensures AGENTS.md and CLAUDE.md match):
 oaef sync    # or: dart run tool/governance.dart sync / python3 tool/governance.py sync
 
-# 2. Audit link integrity, cascade references, and secret scanning:
+# 3. Audit link integrity, cascade references, and secret scanning:
 oaef lint    # or: dart run tool/governance.dart lint / python3 tool/governance.py lint
 
-# 3. Execute the full Quality Gate audit:
+# 4. Execute the full Quality Gate audit:
 oaef audit   # or: dart run tool/governance.dart quality-gate
 ```
 
@@ -145,7 +179,10 @@ oaef audit   # or: dart run tool/governance.dart quality-gate
 ## ❓ Frequently Asked Questions (FAQ)
 
 ### Q: What if my project currently has low or zero test coverage?
-**A:** Choose `[3] Legacy Onboarding` during the wizard (or use `--legacy`). OAEF will measure your current coverage (e.g. 23.4%) and set that as your initial baseline floor. The **Monotonic Ratcheting Rule** will ensure that coverage can only go up, never down, preventing regressions while you incrementally improve the codebase.
+**A:** Choose `[3] Legacy Onboarding` during the wizard (or use `--legacy`). OAEF reads your existing coverage artifacts (`lcov.info`, `coverage-summary.json`, `coverage.xml`, cobertura/jacoco reports), measures the current coverage (e.g. 23.4% lines / 18.1% branches) and locks it as your initial baseline floor. The **Monotonic Ratcheting Rule** ensures coverage can only go up, never down. If no coverage artifact exists, conservative floors (50%/40%) apply — pass `--coverage <pct>` to lock a known value explicitly.
+
+### Q: Will OAEF overwrite my existing files?
+**A:** **No.** The installer is legacy-safe by default: existing files are never modified, and any differing OAEF artifact is proposed as `<file>.oaef-new` for human review. `docs/wiki/metrics/baseline.json` (Monotonic Ratchet), `handoff.md`/`log.md` memory, and `oaef.context.json` are preserved. Use `--backup` to snapshot overwrites or `--force` to opt into replacing conflicts; `--dry-run` previews everything without writing.
 
 ### Q: Does OAEF require Docker or background services?
 **A:** **No.** OAEF operates under the **Zero-Docker / Zero-Daemon** philosophy. All governance scripts run natively in the project's own programming language in milliseconds.

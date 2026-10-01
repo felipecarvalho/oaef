@@ -33,6 +33,8 @@ func main() {
 		runQualityGate()
 	case "lint":
 		runLint()
+	case "conform", "doctor":
+		runConform()
 	case "sync":
 		runSync()
 	default:
@@ -43,7 +45,94 @@ func main() {
 
 func printUsage() {
 	fmt.Println("OAEF Governance Tool (Go Engine)")
-	fmt.Println("Usage: go run tool/governance.go [quality-gate|lint|sync]")
+	fmt.Println("Usage: go run tool/governance.go [quality-gate|lint|doctor|sync]")
+}
+
+func normalizeMirrorText(text string) string {
+	var builder strings.Builder
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, "<!--") {
+			continue
+		}
+		builder.WriteString(line)
+	}
+	return strings.Join(strings.Fields(builder.String()), "")
+}
+
+func runConform() {
+	fmt.Println("🩺 OAEF Conformance Audit (doctor)...")
+	requiredFiles := []string{
+		"AGENTS.md", "CLAUDE.md", "llms.txt", "oaef.context.json",
+		"docs/INDEX.md", "docs/MANIFESTO.md", "docs/DESIGN.md",
+		"docs/standards/coding_patterns.md", "docs/standards/testing.md", "docs/standards/logging.md",
+		"docs/wiki/metrics/baseline.json", "docs/wiki/memory/handoff.md", "docs/wiki/log.md",
+		"docs/HARNESSES.md",
+		".github/workflows/ci.yml", ".github/pull_request_template.md",
+		".gitignore", "CONTRIBUTING.md", "SECURITY.md",
+	}
+	skills := []string{
+		"architecture-audit", "code-review", "collect-coverage", "component-author",
+		"fix-layout-issues", "nullable-types", "run-static-analysis", "screen-builder",
+		"test-generator", "ui-preview", "conformance-audit",
+	}
+	runtimes := []string{
+		"tool/governance.sh", "tool/governance.mjs", "tool/governance.py", "tool/governance.dart",
+		"tool/governance.go", "tool/governance.rs", "tool/governance.main.kts", "tool/governance.swift",
+		"tool/Governance.cs",
+	}
+
+	checks := 0
+	passed := 0
+	failed := false
+	check := func(condition bool, label string) {
+		checks++
+		if condition {
+			passed++
+			fmt.Printf("✅ %s\n", label)
+		} else {
+			fmt.Fprintf(os.Stderr, "❌ %s\n", label)
+			failed = true
+		}
+	}
+
+	for _, requiredFile := range requiredFiles {
+		_, err := os.Stat(requiredFile)
+		check(err == nil, requiredFile+" present")
+	}
+	for _, skill := range skills {
+		_, err := os.Stat(filepath.Join(".agents", "skills", skill, "SKILL.md"))
+		check(err == nil, ".agents/skills/"+skill+"/SKILL.md present")
+	}
+
+	runtimeFound := false
+	for _, runtime := range runtimes {
+		if _, err := os.Stat(runtime); err == nil {
+			runtimeFound = true
+		}
+	}
+	check(runtimeFound, "governance runtime present in tool/")
+
+	agentsData, agentsErr := os.ReadFile("AGENTS.md")
+	claudeData, claudeErr := os.ReadFile("CLAUDE.md")
+	if agentsErr == nil && claudeErr == nil {
+		check(normalizeMirrorText(string(agentsData)) == normalizeMirrorText(string(claudeData)), "CLAUDE.md mirror parity verified")
+	} else {
+		check(false, "mirror parity not verifiable (missing AGENTS.md or CLAUDE.md)")
+	}
+
+	placeholderRe := regexp.MustCompile(`\{\{PROJECT_NAME\}\}|\{\{TECH_STACK\}\}|\{\{STACK_SPECIFIC_RULES\}\}`)
+	placeholderHits := false
+	for _, candidate := range []string{"AGENTS.md", "llms.txt"} {
+		if data, err := os.ReadFile(candidate); err == nil && placeholderRe.Match(data) {
+			placeholderHits = true
+		}
+	}
+	check(!placeholderHits, "no unresolved template placeholders")
+
+	fmt.Printf("\n📊 Conformance: %d/%d checks passed\n", passed, checks)
+	if failed {
+		os.Exit(1)
+	}
 }
 
 func runQualityGate() {
@@ -95,6 +184,16 @@ func runQualityGate() {
 func runLint() {
 	fmt.Println("🔍 Auditing OAEF Integrity & Secret Leaks...")
 	failed := false
+
+	// Mirror parity
+	agentsData, agentsErr := os.ReadFile("AGENTS.md")
+	claudeData, claudeErr := os.ReadFile("CLAUDE.md")
+	if agentsErr == nil && claudeErr == nil {
+		if normalizeMirrorText(string(agentsData)) != normalizeMirrorText(string(claudeData)) {
+			fmt.Fprintln(os.Stderr, "❌ [LINT] CLAUDE.md diverged from AGENTS.md.")
+			failed = true
+		}
+	}
 
 	// Secret patterns
 	secretRe := regexp.MustCompile(`(sk-[a-zA-Z0-9]{20,}|ghp_[a-zA-Z0-9]{20,}|AKIA[0-9A-Z]{16})`)

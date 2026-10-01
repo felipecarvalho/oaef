@@ -21,3 +21,8 @@ Perform comprehensive pre-PR audits ensuring full compliance with OAEF Quality G
 - Audit Clean Sizing (files <= 300 LOC, methods <= 50 LOC).
 - Verify that automated multiplatform tests pass with >= 95% line coverage.
 - Confirm that docs/wiki/memory/handoff.md is updated with zero credentials or PII.
+
+---
+
+## Repository Conformance Gate
+Before approving this review, run `oaef doctor` (native: `tool/governance.* doctor`) and `oaef lint`. A failing conformance or lint check blocks approval; unresolved findings MUST be recorded in `docs/wiki/memory/handoff.md` per the Inviolable Trust Hierarchy.

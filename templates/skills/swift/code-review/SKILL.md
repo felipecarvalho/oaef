@@ -31,3 +31,8 @@ Perform comprehensive pre-PR self-audits on all Swift & Apple Platforms contribu
 4. **PR Template Compliance**:
    - Why and How sections filled in.
    - Zero empty checkboxes (`- [ ]`).
+
+---
+
+## Repository Conformance Gate
+Before approving this review, run `oaef doctor` (native: `tool/governance.* doctor`) and `oaef lint`. A failing conformance or lint check blocks approval; unresolved findings MUST be recorded in `docs/wiki/memory/handoff.md` per the Inviolable Trust Hierarchy.

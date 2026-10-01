@@ -12,11 +12,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Agent Harness Compatibility Matrix (August 2026)**: new `docs/HARNESSES.md` with the verified Tier 1–3 harness landscape (Claude Code, Codex, OpenCode, Antigravity, Cursor, Pi, and 20+ more), instruction-file and skills support, and OAEF integration status.
 - **OpenCode native support**: OpenCode consumes `AGENTS.md` directly and auto-discovers `.agents/skills/`, requiring no mirror file.
+- **Legacy-safe adoption (Path 4)**: `install.sh` never overwrites existing files by default; conflicts are proposed as `<file>.oaef-new`, with `--dry-run`, `--backup`, `--force`, and `--coverage <pct>` flags, and a conflict strategy prompt in the wizard.
+- **Measured legacy baseline**: `--legacy` reads existing coverage artifacts (lcov, coverage-summary.json, cobertura, jacoco/kover) and locks the measured lines/branches as the Monotonic Ratchet floor.
+- **`oaef doctor` conformance audit**: new `conform|doctor` command in all 12 stack runtimes verifying structure, mirror parity, the 11 skills, the governance runtime, and community files; exposed as `bin/oaef doctor|conform` alongside `bin/oaef metrics`.
+- **Framework self-audit**: `scripts/self-audit.sh` plus a 12-stack GitHub Actions matrix workflow that installs each stack in a sandbox and runs doctor + lint.
+- **`conformance-audit` skill (11th)**: repository conformance instructions for every stack; `code-review` and `architecture-audit` now include a Repository Conformance Gate.
+- **AI agent instructions (§9)**: AGENTS.md/CLAUDE.md contract section covering legacy adoption, `oaef doctor/audit/lint/metrics`, and the failure protocol; adoption guidance added to `ADOPTION_PROMPT.md` (Phase 0) and `docs/INDEX.md`.
 - Harness highlights added to `README.md`, `SPECIFICATION.md`, `INSTALL.md`, `ADOPTION_PROMPT.md`, `MANIFESTO.md`, and the installer output.
 
 ### Changed
 - Mirror synchronization documentation aligned with current behavior: `oaef sync` generates the `CLAUDE.md` mirror; `AGENTS.md`-native harnesses require no mirror.
 - Gemini CLI references replaced by its successor, Antigravity CLI (`agy`), retired for personal accounts on 18 June 2026.
+- The portable CLI (`bin/oaef`) is now installed into target projects so the documented `./bin/oaef doctor|lint|audit|sync|metrics` commands work out of the box.
+
+### Fixed
+- Stack runtime mapping: `dart-flutter` and `typescript-web` now install their native governance engines (`governance.dart`, `governance.mjs`) instead of silently falling back to the shell engine.
+- Mirror parity checks in the Node, Python, Go, Rust, Dart, Kotlin, Swift, and C# runtimes now ignore the generated banner and detect real divergence.
+- Installer hydration no longer rewrites literal `{{...}}` patterns inside governance runtimes, and preserved legacy files are never modified.
 
 ---
 

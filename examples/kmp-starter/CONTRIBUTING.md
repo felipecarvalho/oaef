@@ -54,13 +54,16 @@ chore: update release bundling script
 ### Step 3: Local Verification
 Before opening a Pull Request, run the local verification suite:
 ```bash
-# Execute Quality Gate audit
-./bin/oaef audit
+# Conformance audit: structure, skills, mirrors, and community files
+./bin/oaef doctor
 
-# Verify documentation link integrity, mirrors, and secret scanning
+# Verify documentation link integrity, cascade references, and secret scanning
 ./bin/oaef lint
 
-# Synchronize AGENTS.md with mirrors
+# Execute the multidimensional Quality Gate audit
+./bin/oaef audit
+
+# Synchronize AGENTS.md with the CLAUDE.md mirror
 ./bin/oaef sync
 ```
 All checks must pass with zero errors, zero warnings, and zero secret detections.

@@ -22,6 +22,10 @@ switch (command) {
   case 'lint':
     runLint();
     break;
+  case 'conform':
+  case 'doctor':
+    runConform();
+    break;
   case 'sync':
     runSync();
     break;
@@ -32,6 +36,7 @@ Commands:
   quality-gate [--record]  Audit Quality Gates & ratchet baseline
   metrics                  Display historical metrics report
   lint                     Audit links, cascade references & secrets
+  doctor                   Audit OAEF conformance (structure, skills, mirrors)
   sync                     Synchronize AGENTS.md to mirrors`);
     process.exit(1);
 }
@@ -108,13 +113,8 @@ function runLint() {
 
   // Mirror sync
   if (fs.existsSync('AGENTS.md') && fs.existsSync('CLAUDE.md')) {
-    const agents = fs.readFileSync('AGENTS.md', 'utf8').trim();
-    let claude = fs.readFileSync('CLAUDE.md', 'utf8').trim();
-    if (claude.startsWith('<!--')) {
-      const end = claude.indexOf('-->');
-      if (end !== -1) claude = claude.slice(end + 3).trim();
-    }
-    if (agents !== claude) {
+    const normalize = (text) => text.split('\n').filter((line) => !line.startsWith('<!--')).join('').replace(/\s+/g, '');
+    if (normalize(fs.readFileSync('AGENTS.md', 'utf8')) !== normalize(fs.readFileSync('CLAUDE.md', 'utf8'))) {
       console.error('❌ [LINT] CLAUDE.md diverged from AGENTS.md.');
       failed = true;
     }
@@ -187,6 +187,61 @@ function runLint() {
 
   if (failed) process.exit(1);
   console.log('✅ [LINT] All audits passed cleanly.');
+}
+
+function runConform() {
+  console.log('🩺 OAEF Conformance Audit (doctor)...');
+  const requiredFiles = [
+    'AGENTS.md', 'CLAUDE.md', 'llms.txt', 'oaef.context.json',
+    'docs/INDEX.md', 'docs/MANIFESTO.md', 'docs/DESIGN.md',
+    'docs/standards/coding_patterns.md', 'docs/standards/testing.md', 'docs/standards/logging.md',
+    'docs/wiki/metrics/baseline.json', 'docs/wiki/memory/handoff.md', 'docs/wiki/log.md',
+    'docs/HARNESSES.md',
+    '.github/workflows/ci.yml', '.github/pull_request_template.md',
+    '.gitignore', 'CONTRIBUTING.md', 'SECURITY.md'
+  ];
+  const skills = [
+    'architecture-audit', 'code-review', 'collect-coverage', 'component-author',
+    'fix-layout-issues', 'nullable-types', 'run-static-analysis', 'screen-builder',
+    'test-generator', 'ui-preview', 'conformance-audit'
+  ];
+  const runtimes = [
+    'tool/governance.sh', 'tool/governance.mjs', 'tool/governance.py', 'tool/governance.dart',
+    'tool/governance.go', 'tool/governance.rs', 'tool/governance.main.kts', 'tool/governance.swift',
+    'tool/Governance.cs'
+  ];
+  const placeholderPattern = /\{\{PROJECT_NAME\}\}|\{\{TECH_STACK\}\}|\{\{STACK_SPECIFIC_RULES\}\}/;
+  let checks = 0;
+  let passed = 0;
+  let failed = false;
+  const check = (condition, label) => {
+    checks += 1;
+    if (condition) {
+      passed += 1;
+      console.log(`✅ ${label}`);
+    } else {
+      console.error(`❌ ${label}`);
+      failed = true;
+    }
+  };
+
+  for (const file of requiredFiles) check(fs.existsSync(file), `${file} present`);
+  for (const skill of skills) check(fs.existsSync(`.agents/skills/${skill}/SKILL.md`), `.agents/skills/${skill}/SKILL.md present`);
+  check(runtimes.some((runtime) => fs.existsSync(runtime)), 'governance runtime present in tool/');
+
+  if (fs.existsSync('AGENTS.md') && fs.existsSync('CLAUDE.md')) {
+    const normalize = (text) => text.split('\n').filter((line) => !line.startsWith('<!--')).join('').replace(/\s+/g, '');
+    check(normalize(fs.readFileSync('AGENTS.md', 'utf8')) === normalize(fs.readFileSync('CLAUDE.md', 'utf8')), 'CLAUDE.md mirror parity verified');
+  } else {
+    check(false, 'mirror parity not verifiable (missing AGENTS.md or CLAUDE.md)');
+  }
+
+  const agentsText = fs.existsSync('AGENTS.md') ? fs.readFileSync('AGENTS.md', 'utf8') : '';
+  const llmsText = fs.existsSync('llms.txt') ? fs.readFileSync('llms.txt', 'utf8') : '';
+  check(!placeholderPattern.test(agentsText) && !placeholderPattern.test(llmsText), 'no unresolved template placeholders');
+
+  console.log(`\n📊 Conformance: ${passed}/${checks} checks passed`);
+  if (failed) process.exit(1);
 }
 
 function runSync() {

@@ -9,6 +9,12 @@ You are an expert software engineer and autonomous agent instructed to adopt the
 
 Follow this systematic 5-phase procedure:
 
+### Phase 0: Existing (Legacy) Repository Discovery
+If the repository already contains code, docs, or agent contracts:
+1. Run the legacy-safe discovery first: `./install.sh --target . --stack auto --legacy --dry-run` (or `oaef init --legacy --dry-run`).
+2. Review conflicts: existing files are preserved and proposals are written as `<file>.oaef-new`. NEVER overwrite a human-authored contract without explicit approval; prefer `--backup` over `--force`.
+3. With `--legacy`, coverage measured from existing artifacts (lcov/cobertura/jacoco/coverlet) is locked as the Monotonic Ratchet floor — quality may only increase.
+
 ### Phase 1: Architectural Discovery & Stack Inspection
 1. Inspect the repository root to detect the primary technology stack, package manager, and test runner:
    - Dart/Flutter (`pubspec.yaml`)
@@ -54,7 +60,7 @@ Create the living repository documentation tree under `docs/`:
 CRITICAL ZERO-POLLUTION RULE: Install ONLY documentation and scripts relevant to this project's stack. Do NOT add files or skills from unrelated programming languages.
 
 ### Phase 4: Stack-Adaptive Agent Skills
-Install the 10 canonical agent skills into `.agents/skills/` tailored strictly to the detected language:
+Install the 11 canonical agent skills into `.agents/skills/` tailored strictly to the detected language:
 1. `test-generator`: Instructions using the project's actual test framework (95% line, 90% branch coverage target).
 2. `code-review`: Pre-PR self-audit checklist and Quality Gate verification.
 3. `collect-coverage`: Native coverage collection and LCOV parsing instructions.
@@ -65,10 +71,12 @@ Install the 10 canonical agent skills into `.agents/skills/` tailored strictly t
 8. `screen-builder` / `service-builder`: Vertical feature module implementation with Clean Sizing.
 9. `ui-preview`: Isolated preview rules (or Swagger/OpenAPI for APIs).
 10. `architecture-audit`: Architectural boundaries and cyclic dependency audit.
+11. `conformance-audit`: Repository conformance audit (`oaef doctor`) — structure, skills, mirrors, and community files.
 
 ### Phase 5: Verification & Genesis Record
 1. Run static analysis on the repository to verify zero warnings.
 2. Execute the test suite and calculate the initial baseline coverage.
-3. Record the initial session state in `docs/wiki/memory/handoff.md` and append the Genesis entry in `docs/wiki/log.md`.
-4. Present a clear summary of the newly activated Living Repository to the user.
+3. Run the conformance audit: `oaef doctor` (or the stack's `tool/governance.* doctor`) and `oaef lint`; resolve every ❌ before declaring success.
+4. Record the initial session state in `docs/wiki/memory/handoff.md` and append the Genesis entry in `docs/wiki/log.md`.
+5. Present a clear summary of the newly activated Living Repository to the user.
 ```
