@@ -154,7 +154,7 @@ SK-03 — skill "<name>" is not listed in llms.txt / entrypoint <file> does not 
 SK-04 — trigger "<keyword>" for skill "<name>" is missing from its frontmatter "Triggers on:" / skill "<name>" has no dispatch-matrix row
 SK-05 — harness mirror "<dir>" diverges from .agents/skills for skill "<name>" (run: oaef skills sync-mirrors)
 SK-06 — routing self-test failed: prompt "<prompt>" resolved to "<got>" but expected "<expected>"
-PT-01 — ponytail debt marker: <path>:<line> — <reason>
+PT-01 — ponytail debt marker (emitted as: PT-01 <path>:<line> — <reason>)
 ```
 
 `CC-04` is blocking under every profile. `SK-05` is blocking under every profile. Everything else in the `CC-*` family is blocking under `strict` and advisory under `standard` and under any adoption mode (§9).

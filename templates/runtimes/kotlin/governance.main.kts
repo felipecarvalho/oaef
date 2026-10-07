@@ -39,8 +39,15 @@ var ccTotal = 0
 var skillFailures = 0
 val ccCounts = mutableMapOf<String, Int>()
 
-val command = args.firstOrNull() ?: ""
-val cliArgs = args.drop(1)
+// `kotlinc -script` consumes leading-dash flags itself, so bin/oaef and scripts/self-audit.sh pass the
+// command line through OAEF_GOVERNANCE_ARGS; direct invocation still works through the script `args`.
+val rawArgs: List<String> = if (args.isNotEmpty()) {
+    args.toList()
+} else {
+    (System.getenv("OAEF_GOVERNANCE_ARGS") ?: "").split(" ").filter { it.isNotBlank() }
+}
+val command = rawArgs.firstOrNull() ?: ""
+val cliArgs = rawArgs.drop(1)
 
 when (command) {
     "quality-gate", "audit" -> runQualityGate()
@@ -939,11 +946,14 @@ fun matrixRows(): List<Pair<String, String>> {
         }
         if (!inside) continue
         if (!line.startsWith("|")) continue
-        val cells = line.split("|")
-        if (cells.size < 7) continue
-        val triggers = cells[4].trim()
-        val primary = cells[5].replace(Regex("[`\\s]"), "")
-        if (primary.isEmpty() || primary == "PrimarySkill") continue
+        // Kotlin's String.split drops trailing empty strings: a five-column row yields six cells
+        // (["", intent, territory, triggers, primary, meta]).
+        val cells = line.split("|").toMutableList()
+        while (cells.isNotEmpty() && cells.last().isBlank()) cells.removeAt(cells.size - 1)
+        if (cells.size < 5) continue
+        val triggers = cells[3].trim()
+        val primary = cells[4].replace(Regex("[`\\s]"), "")
+        if (primary.isEmpty() || primary == "PrimarySkill" || primary.startsWith(":")) continue
         rows.add(Pair(primary, triggers))
     }
     return rows
@@ -959,7 +969,7 @@ fun auditTriggerCoherence() {
         }
         if (isAdoption() && userOwnedSkill(skill)) continue
         val description = frontmatterValue(skill, "description").lowercase()
-        for (piece in row.second.split("|")) {
+        for (piece in row.second.split(",")) {
             if (piece.isEmpty()) continue
             var trigger = piece
             if (trigger.startsWith("\"")) trigger = trigger.substring(1)

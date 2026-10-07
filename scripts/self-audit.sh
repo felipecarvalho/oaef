@@ -124,7 +124,7 @@ run_native() { # run_native <stack> <command...>
       ./.oaef/governance-rust "$@"
       ;;
     dart-flutter) dart run tool/governance.dart "$@" ;;
-    kotlin|kotlin-multiplatform) kotlinc -script tool/governance.main.kts "$@" ;;
+    kotlin|kotlin-multiplatform) OAEF_GOVERNANCE_ARGS="$*" kotlinc -script tool/governance.main.kts ;;
     swift) swift tool/governance.swift "$@" ;;
     dotnet) dotnet run --project tool/Governance.csproj -- "$@" ;;
     *) return 1 ;;
