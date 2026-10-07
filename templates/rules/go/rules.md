@@ -21,3 +21,86 @@
 5. **Safe Concurrency & Goroutine Lifecycles**:
    - Never spawn unmanaged goroutines. Always propagate `context.Context` for cancellation and timeouts.
    - Synchronize termination using `sync.WaitGroup` or channels to prevent leaks.
+
+---
+
+### Simplicity Ladder & Anti-AI-Slop
+
+1. Climb the ladder before writing code: YAGNI > reuse an existing helper in the module > `slices`, `maps`, `strings.Builder`, `errors.Is/As`, `context`, `net/http` > a platform capability already available (OS process, `os`, `time`, `crypto`) > an already-installed dependency in `go.mod` > a one-line idiomatic expression > the smallest correct diff. The best code is the code you did not have to write.
+2. Generic functions are justified only when a second concrete instantiation already exists; a generic extracted for a single call site is speculative.
+3. Banned ceremonies: a one-line pass-through use case struct that forwards to the same method, a single-implementation interface with no fake or mock need, a forwarding wrapper that only re-invokes its embedded field, and comments that narrate the next statement.
+4. Change by deletion first: `[DELETE]` removes dead code, `[STDLIB]` replaces custom code with `slices`/`maps`/`strings`, `[NATIVE]` replaces a dependency with a platform capability, `[YAGNI]` drops speculative generality, `[SHRINK]` collapses a helper into its only caller.
+5. Mark every deliberate simplification with `// ponytail: <ceiling + evolution trigger>`, for example `// ponytail: linear scan over the in-memory index, switch to a map above 10k entries`.
+6. Safety frontier: request validation, error routing, privacy, accessibility and the Quality Gates are never pruned by a simplicity pass.
+
+### SOLID & Substitutability
+
+1. **S**: one reason to change per type and per package; a struct that decodes, validates and persists at once is three responsibilities.
+2. **O**: extend behavior with new types satisfying an interface, not with growing `switch` statements over a kind field.
+3. **L**: a concrete implementation must honor the full documented contract of the interface it satisfies; narrowing an error or tightening a precondition breaks substitutability.
+4. **I**: keep interfaces to one or two methods and define them in the consuming package (`io.Reader` style); do not import an interface from the provider.
+5. **D**: depend on the interface the consumer owns; concrete construction belongs to the composition root (`main.go`, `cmd/**/main.go`).
+6. Production code never reaches an interface method through `panic("not implemented"` or `panic("TODO"`; an incomplete contract is a substitutability failure, not a placeholder.
+
+### Dependency Inversion & Container Confinement
+
+1. Dependencies arrive through explicit constructor functions returning concrete structs, or through interface parameters accepted by the consumer; no global registry, no package-level mutable singletons.
+2. `CC-07` (service locator / global container resolution) is a **documented no-op for Go**: there is no idiomatic service locator. It degrades to review guidance — constructing a long-lived dependency inside `internal/<feature>/{domain,data}` or a handler instead of injecting it through the constructor is the failure mode to reject in review.
+3. `CC-10` (concrete network-client instantiation) is a **documented no-op for Go**. Review guidance applies instead: an `http.Client` (or any concrete transport) is constructed once in the composition root and passed in; a zero-value `http.DefaultClient` used implicitly from `domain`/`data` packages is the same violation.
+4. Allowed construction roots for Go: `main.go`, `cmd/**/main.go`, and explicit `internal/<feature>/.../New...` composition functions that receive their dependencies as parameters.
+
+### Non-Nullable Collections & Nullability Minimization
+
+1. `nil` must carry business meaning; a missing value with no domain semantics is a bug, not a valid state.
+2. `CC-08` (nullable collection parameter) is a **documented no-op for Go**, because the type system cannot express a non-null constant-empty default. The rule degrades to an advisory contract: every collection parameter or return documented as nil-safe must state it, and callers must treat the zero value as an empty, usable collection.
+3. Return an empty non-nil slice (`[]T{}`) from public collection-returning functions so callers never branch on `nil` versus empty.
+4. Manual nil checks are a last resort: reject a nil pointer argument in the constructor with an explicit error instead of guarding it at every call site, and never re-introduce a nil pointer to paper over a missing dependency.
+
+### Two-Layer Resilience & Zero Silent Exception Swallowing
+
+1. Layer 1 — infrastructure: capture the error once, log it through the injected logging interface with structured context plus the wrapped error, and return it wrapped (`fmt.Errorf("...: %w", err)`) or mapped to a domain error sentinel.
+2. Layer 2 — coordination: bound every outbound call with a `context.Context` deadline, add retry with backoff where idempotent, and a circuit breaker or load-shedding barrier where the dependency is shared.
+3. Prohibited shapes (`CC-06`): an empty `if err != nil { }` body, `_ = err`, and an empty `recover() { }`. A recovery that neither logs nor re-panics is silent swallowing.
+4. The logging interface is an injected `*slog.Logger` (or the project's equivalent `log`-prefixed interface); raw `fmt.Print*`/`println(` output is a `CC-05` violation and never the error path.
+
+### DRY Test Factories
+
+1. One local factory per entity in the package's test file (`*_test.go`), named `make<Entity>` (for example `makeRequest`, `makeOrder`), returning a valid fully-populated value by default.
+2. The factory takes only the fields that vary in the suite; unvarying fields are set to deterministic defaults. Dead parameters that no caller overrides are removed on sight.
+3. Test data is deterministic: no ambient clock (`time.Now()`), no unseeded `math/rand`, no real network or filesystem access; inject a fixed `clock` interface or use table-driven literal fixtures.
+4. The runner is `go test ./... -coverprofile=coverage.out` with table-driven tests; doubles are hand-written fakes implementing the consumer-owned interface, not reflection-based mocks.
+
+### Solution Abstraction Elevation (Rule of Two)
+
+1. The same solution appearing in two locations is elevated to one shared abstraction in the same change set — a helper in `internal/`, a generic over the concrete type, or a shared `New...` constructor.
+2. A single-implementation abstraction with no fake or mock need is prohibited; an interface extracted for its own sake is speculative generality and loses to the direct call.
+3. Every elevation documents its ceiling and the trigger that invalidates it, using the `// ponytail:` marker when the shared abstraction is a deliberate simplification.
+4. Elevate by moving the existing implementation, not by adding a new layer that wraps it.
+
+### Native / Multi-Platform Dependency Audit
+
+1. Native and cross-compiled dependencies are declared in `go.mod`; `go.sum` must be committed and current.
+2. Before accepting a dependency that ships cgo or platform-specific assembly, prove the build for the target matrix used by the project: `linux/amd64`, `darwin/arm64`, `windows/amd64`.
+3. Record whether the project builds with `CGO_ENABLED=0` or requires `cgo`; a dependency that silently forces `cgo` is rejected unless the project already requires it.
+4. In downstream host repositories, verify transitive compatibility before accepting the dependency: no duplicate symbol or version conflict against the host's existing `go.mod`, and a clean build for every target in the matrix.
+
+### Memory & Allocation Discipline
+
+1. Inspect without copying: iterate with `for _, item := range slice` and take a pointer receiver only when mutation is required.
+2. Return the original reference when nothing changed; do not rebuild a slice that is already correct.
+3. Avoid intermediate collections on hot paths: preallocate with `make([]T, 0, n)` when the final size is known, and do not allocate inside a loop what can be hoisted out of it.
+4. `CC-11` (advisory) flags `append(` inside a loop over an unbounded slice: prefer a single preallocated destination or a `slices`/`strings.Builder` primitive that owns the growth.
+
+### Privacy by Design (Consent & PII Redaction)
+
+1. No personal data leaves the process or is persisted until the consent gate for that purpose has been recorded; the gate is evaluated before the first outbound call and before any persistence.
+2. Redaction is lazy and allocation-free on the clean path: return the original value by reference when nothing is redactable, and allocate only when a redaction is actually applied.
+3. Blocked-key matching reads from one keyword list owned by a single module; no redaction keyword literal is duplicated across packages.
+4. Third-party SDKs are not initialized before consent; initialization is deferred to the first consent-granted event.
+5. See `docs/standards/analytics_and_telemetry.md` for the provider abstraction, dual event taxonomy and sanitizer contract.
+
+### Applicable Governance Checks
+
+1. `CC-01`, `CC-02`, `CC-04`, `CC-05`, `CC-06`, `CC-09` and `CC-11` apply mechanically to Go: closure `func(x T)` and `x :=` bindings, the cryptic-abbreviation token list, placeholder/secret assignments, `fmt.Print*`/`println(` raw output, empty `if err != nil { }` / `_ = err` / empty `recover()`, `panic("not implemented"` / `panic("TODO"`, and `append(` inside an unbounded loop.
+2. Documented no-ops for this stack: `CC-03` (no mutable lazy init pattern), `CC-07` (no idiomatic service locator), `CC-08` (type system cannot express a non-null collection default) and `CC-10` (concrete network client); each degrades to the review guidance above and is never emitted mechanically.
+3. `oaef clean-code` enforces these; see `docs/standards/governance_checks.md`.

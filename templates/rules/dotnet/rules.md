@@ -22,3 +22,96 @@
 5. **Interface-Based Dependency Injection**:
    - Register dependencies against interfaces with explicit lifetimes (`AddScoped`, `AddSingleton`, `AddTransient`).
    - Domain logic must remain decoupled from specific infrastructure implementations.
+
+---
+
+### Simplicity Ladder & Anti-AI-Slop
+
+Climb before writing a line; stop at the first rung that holds:
+1. YAGNI — the capability is not required yet.
+2. Reuse an existing type, service or extension method already in the codebase.
+3. BCL primitive — `LINQ`, `Span<T>`, `record`, pattern matching, `IReadOnlyList<T>`, `StringBuilder`, `System.Text.Json`.
+4. Platform-native capability — ASP.NET Core, MAUI/Blazor adaptive triggers, `IAsyncEnumerable<T>`, `TimeProvider`, `System.Threading.Channels`.
+5. Already-installed NuGet dependency.
+6. One-line idiomatic expression (`?.`, `??`, `switch` expression, collection expression).
+7. Smallest correct diff.
+
+- Banned ceremonies: single-caller pass-through service or use case; single-implementation interface with no test double or second binding; forwarding wrapper that adds no behavior; narration comments restating the next statement.
+- Declare a deliberate simplification ceiling with `// ponytail: <ceiling + evolution trigger>`, reopened by `oaef ponytail debt` (report-only).
+- Remediation tags: `[DELETE] [STDLIB] [NATIVE] [YAGNI] [SHRINK]`.
+- Safety frontier: input validation, error routing, privacy redaction, accessibility and the Quality Gate matrix are never pruned by the ladder.
+
+### SOLID & Substitutability
+
+- **SRP** — one axis of change per class, service and component; split by responsibility, not by layer count.
+- **OCP** — extend through composition and `virtual`/interface seams, not by editing closed consumers.
+- **LSP** — every subtype honors the base contract; an override that throws, narrows preconditions or widens postconditions breaks substitutability.
+- **ISP** — small consumer-owned interfaces; never force a type to implement members it ignores.
+- **DIP** — high-level policy depends on abstractions owned by the consumer, never on `HttpClient`, `DbContext` or infrastructure types.
+- Concrete substitutability failure in C#: `override` methods that throw or hide behavior, `new`-shadowed members, and overloads resolved against the runtime type instead of the declared type.
+- A production implementation of a contract never contains `throw new NotImplementedException(` (CC-09); partial implementations must complete the contract.
+
+### Dependency Inversion & Container Confinement
+
+- Dependencies arrive through constructors and explicit parameters; no field-level lookup inside business logic.
+- `serviceProvider.GetService<`, `GetRequiredService<` and `ServiceLocator.Get<` are allowed only in the composition root: `Program.cs`, `Startup.cs`, `*CompositionRoot*` (CC-07).
+- Domain, data, application and service layers never resolve a container; the required abstraction is passed in.
+- `new HttpClient(` is never instantiated outside the composition root; inject the typed client or `IHttpClientFactory` instead (CC-10).
+- Lifetimes are explicit (`AddScoped`/`AddSingleton`/`AddTransient`); a scoped dependency is never captured by a singleton.
+
+### Non-Nullable Collections & Nullability Minimization
+
+- Absence of a value is expressed with business meaning, not with a nullable collection; `null` never means "empty".
+- A collection parameter or return defaults to a constant empty collection: `Array.Empty<T>()`, `ImmutableArray<T>.Empty`, `[]`, or an `IReadOnlyList<T>` singleton.
+- Nullable collection parameters (`List<T>?`, `IEnumerable<T>?`, `Dictionary<K,V>?`) in a public signature are prohibited without a non-null constant-empty default (CC-08).
+- `<Nullable>enable</Nullable>` stays on and the null-forgiving `!` operator is banned in production logic; guard the contract or model the absence explicitly.
+- Prefer methods that never return `null` and never accept `null` collections over defensive null checks scattered across call sites.
+
+### Two-Layer Resilience & Zero Silent Exception Swallowing
+
+- Layer 1 (infrastructure): `try`/`catch` logs structured context plus the exception and stack trace through `ILogger<T>`, then either rethrows or wraps into a domain error or `Result<T>`.
+- Layer 2 (coordination): a boundary applies timeout, bounded retry and circuit breaking (e.g. Polly policies) so one failing dependency cannot cascade.
+- Silent swallowing is prohibited: empty `catch { }` and `catch { } // ignore` handlers with no log, no rethrow and no error routing are violations (CC-06).
+- Never catch `Exception` merely to continue; catch what you can handle and let the rest surface.
+- The logging interface is `ILogger`/`ILogger<T>`; `Console.WriteLine` and `Debug.WriteLine` are not logging (CC-05).
+
+### DRY Test Factories
+
+- One local factory per entity per suite, named `Make<Entity>`, constructing a valid default through the constructor.
+- Expose only the parameters that actually vary; no dead parameters and no always-null arguments.
+- Factories are deterministic: inject `TimeProvider`, avoid ambient `DateTime.Now`, `Guid.NewGuid()` outside the seeded path, randomness and live network.
+- Optional collections default to a constant empty collection inside the factory, never to `null`.
+- Use xUnit/NUnit with `Theory`/`MemberData` for variants and `NSubstitute`-style doubles for collaborators; the double implements the consumer-owned abstraction.
+
+### Solution Abstraction Elevation (Rule of Two)
+
+- Two occurrences of the same solution become one shared abstraction inside the same change set, not in a follow-up.
+- A single-implementation abstraction with no mock need and no second binding is prohibited; inline it and delete the interface.
+- The elevated abstraction documents its ceiling and the trigger that invalidates it (`// ponytail:` marker), so the next reviewer knows when to re-open the decision.
+- Elevation moves behavior, not names: a re-export or forwarding wrapper is not an abstraction.
+
+### Native / Multi-Platform Dependency Audit
+
+- Native dependencies are declared in `*.csproj` and centralized in `Directory.Packages.props`; RID-specific native assets are pinned per runtime identifier.
+- Prove the target framework matrix (`net8.0`, `net8.0-android`, `net8.0-ios`, and every declared RID) builds without warnings before accepting the dependency.
+- Run duplicate assembly checks across targets and confirm no conflicting native symbols or consumer-facing version downgrades.
+- Before acceptance, verify transitive compatibility in downstream host repositories, not only in the current project.
+
+### Memory & Allocation Discipline
+
+- Avoid `.ToList()` (and `.ToArray()`) inside a loop body on a hot path; project with `LINQ` on the outside of the loop or use `Span<T>`/`stackalloc` for transient windows (CC-11).
+- Inspect without copying: expose `ReadOnlySpan<T>`/`IReadOnlyList<T>` views and return the original reference when nothing changes.
+- Reuse request paths with `ArrayPool<T>` for large buffers and avoid intermediate collections that live only to feed the next call.
+- Hot paths stay allocation-conscious in Debug and Release; a measured allocation is fixed at the source, not masked with suppressions.
+
+### Privacy by Design (Consent & PII Redaction)
+
+- No personal data leaves the process or is persisted before a recorded consent gate; the gate is checked once at the boundary, not per call site.
+- Sanitization is lazy and allocation-free on the clean path: when nothing is redactable the original collection/reference is returned unchanged.
+- Blocked-key keyword list lives in a single module and is the only source of truth for PII detection; redaction replaces with `[REDACTED]` or strips, never logs the raw value.
+- Third-party SDKs (analytics, crash, attribution) are not initialized before consent; see `docs/standards/analytics_and_telemetry.md`.
+
+### Applicable Governance Checks
+
+- Applicable: `CC-01`, `CC-02`, `CC-03`, `CC-04`, `CC-05`, `CC-06`, `CC-07`, `CC-08`, `CC-09`, `CC-10`, `CC-11`; no documented no-ops for this stack.
+- `oaef clean-code` enforces these; see `docs/standards/governance_checks.md`.

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-10-06
+
+### Added
+- **Cross-language governance barriers (`CC-01`–`CC-11`)**: every one of the 12 native runtimes now implements the same clean-code check catalog — identifier discipline, mutable lazy initialization, hardcoded placeholders, raw debug output, silent exception swallowing, service-locator leakage, nullable collections, unimplemented placeholders, concrete network-client instantiation and avoidable allocation — with the identical output contract `<CHECK-ID> <path>:<line> — <message>` and the identical canonical messages.
+- **`docs/standards/governance_checks.md`**: the normative catalog of every mechanical barrier, its scope, exclusion set, per-stack realization and canonical messages.
+- **13-skill catalog**: `ponytail` (Simplicity Ladder, anti-AI-slop, debt markers) and `responsive-layout` (adaptive surfaces, reinterpreted per stack) join the 11 existing skills in every stack; all 156 `SKILL.md` files carry the saturated frontmatter (`Use when` / `Triggers on:` / `Chains into:`).
+- **Skill activation is now verifiable**: harness mirrors (`.claude/skills/`, `.cursor/rules/`, `.windsurf/skills/`, `.cline/skills/`, `.grok/agents/`), dispatch-matrix coherence (`SK-04`), harness mirror parity (`SK-05`) and a routing self-test with 12 prompt fixtures (`SK-06`), plus `oaef skills route "<prompt>"` and `oaef skills sync-mirrors [--check]`.
+- **Non-destructive adoption and in-place upgrade**: section sentinels (`<!-- oaef:section:* -->`) make merges surgical; `oaef adopt` (`--legacy`) and `oaef upgrade` reuse existing content, add new skills and standards, and record every advisory barrier in the Adoption Debt Ledger (`docs/wiki/memory/adoption.md`, `docs/wiki/metrics/adoption.json`).
+- **New canonical standards**: `clean_code.md`, `solid.md`, `review.md`, `analytics_and_telemetry.md`, and a fifth pillar — Minimalism & Design Integrity (Simplicity Ladder + SOLID).
+- **New commands**: `oaef clean-code`, `oaef ponytail debt`, `oaef ponytail audit`, `oaef skills audit [--selftest]`, `oaef skills route`, `oaef skills sync-mirrors`, `oaef adopt`, `oaef upgrade`.
+- **Installer flags**: `--upgrade`, `--no-mirrors`, `--adopt-report`, `--ratchet-clean-code`, `--migrate-frontmatter`; `--dry-run` now classifies every destination as `install`, `merge-additive`, `merge-conflict`, `propose-oaef-new` or `preserve`.
+- **`examples/legacy-sample/`**: a pre-framework fixture proving non-destructive adoption, upgrade idempotence and ledger generation.
+
+### Changed
+- `AGENTS.md`/`CLAUDE.md` contract: `§3` now documents the 13 skills, the five chaining recipes, the dispatch matrix and the territorial scopes; `§4.7`–`§4.19` add the Simplicity Ladder, SOLID and substitutability, DI confinement, non-nullable collections, two-layer resilience, DRY test factories, Rule of Two elevation, native dependency audit, allocation discipline, privacy by design, the Phase-0 dispatch gate and pre-review ingestion.
+- Every `templates/rules/<stack>/rules.md` and `templates/ci/<stack>/ci.yml` gained the new governance steps; `baseline.json` gained the `clean_code` and `simplicity` blocks and moved to `1.1.0`.
+- `docs/HARNESSES.md`, `docs/INDEX.md`, `llms.txt`, the pull-request template and the manifestos now describe 13 skills, the mirrors and the governance checks.
+
+### Fixed
+- Skill mirrors are created with the correct relative target (`../.agents/skills`) and dangling or diverged mirrors are now detected instead of silently passing parity.
+- The committed `__pycache__` artifact was removed from the Python runtime template.
+- Profile handling: `--standard` and adoption modes degrade the new barriers to advisory instead of failing the gate; `CC-04` and `SK-05` remain blocking under every profile.
+
 ## [Unreleased]
 
 ### Added

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "framework": "OAEF",
   "profile": "strict",
   "stack": "react-native",
@@ -25,6 +25,24 @@
       "max_oversized_methods": 0,
       "method_max_lines": 50
     },
+    "clean_code": {
+      "max_single_letter_identifiers": 0,
+      "max_cryptic_abbreviations": 0,
+      "max_mutable_lazy_initializations": 0,
+      "max_dummy_keys": 0,
+      "max_raw_prints": 0,
+      "max_silent_catches": 0,
+      "max_service_locator_leaks": 0,
+      "max_nullable_collections": 0,
+      "max_unimplemented_placeholders": 0,
+      "max_concrete_client_instantiations": 0,
+      "max_trigger_matrix_mismatches": 0,
+      "max_harness_mirror_mismatches": 0
+    },
+    "simplicity": {
+      "ponytail_debt_markers": "report-only",
+      "max_speculative_single_caller_abstractions": "advisory"
+    },
     "secret_scanning": {
       "max_detected_secrets": 0
     },
@@ -41,6 +59,27 @@
         "/generated/",
         "dist/",
         "build/"
+      ],
+      "clean_code": [
+        ".git/",
+        ".github/",
+        ".agents/",
+        ".oaef/",
+        "node_modules/",
+        "vendor/",
+        "build/",
+        "dist/",
+        "target/",
+        "obj/",
+        "tool/",
+        "docs/",
+        "templates/",
+        "examples/",
+        "coverage/",
+        "generated/",
+        "__pycache__/",
+        ".venv/",
+        "venv/"
       ]
     }
   }

@@ -32,3 +32,18 @@ jobs:
 
       - name: Install & audit stack in a sandbox
         run: bash scripts/self-audit.sh --stack ${{ matrix.stack }}
+
+  adoption_fixture:
+    name: Adoption & Upgrade (legacy fixture)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Exercise examples/legacy-sample (adopt + upgrade idempotence)
+        run: bash scripts/self-audit.sh --fixture-only

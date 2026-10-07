@@ -1,0 +1,33 @@
+name: Architecture Decision Record (ADR) Proposal
+description: Propose an architectural decision, standard amendment, or structural trade-off
+title: "[ADR]: "
+labels: ["adr", "architecture"]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context & Problem Statement
+      description: What architectural context or constraint requires a formal decision?
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: Proposed Decision
+      description: What technical choice is being proposed?
+    validations:
+      required: true
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Consequences & Trade-offs
+      description: What becomes easier, harder, or forbidden as a result of this decision?
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Verification
+      options:
+        - label: I understand ADRs require human review and cannot be committed autonomously by agents.
+          required: true

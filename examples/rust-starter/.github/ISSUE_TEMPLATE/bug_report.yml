@@ -1,0 +1,51 @@
+name: Bug Report
+description: File a bug report to help us improve OAEF
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue!
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Run './install.sh --target ...'
+        2. Execute 'oaef audit'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs Actual Behavior
+      description: What did you expect to happen vs what actually occurred?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment & Stack
+      description: Operating System, Tech Stack, OAEF version.
+      placeholder: macOS 14.5 / TypeScript 5.5 / OAEF 1.0.0
+    validations:
+      required: false
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Contributor Checklist
+      options:
+        - label: I have verified this is not a duplicate issue.
+          required: true
+        - label: I have verified that this violates OAEF specifications or invariants.
+          required: true

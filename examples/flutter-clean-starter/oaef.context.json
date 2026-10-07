@@ -1,11 +1,14 @@
 {
   "framework": "Open Agentic Engineering Framework (OAEF)",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Felipe Carvalho",
   "project_name": "flutter-clean-starter",
   "description": "",
   "stack": "dart-flutter",
   "strictness": "strict",
-  "installed_at": "2026-09-30T16:30:53Z",
+  "adoption_mode": "install",
+  "skills_count": 13,
+  "governance_checks": ["CC-01", "CC-02", "CC-03", "CC-04", "CC-05", "CC-06", "CC-07", "CC-08", "CC-09", "CC-10", "CC-11", "SK-01", "SK-02", "SK-03", "SK-04", "SK-05", "SK-06", "PT-01"],
+  "installed_at": "2026-10-07T00:44:41Z",
   "inviolable_trust_hierarchy": "Compiler > Automated Tests > Source Code > Wiki/Docs > Ephemeral Memory > LLM Hallucination"
 }

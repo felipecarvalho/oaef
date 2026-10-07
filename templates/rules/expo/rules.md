@@ -22,3 +22,113 @@
 5. **StyleSheet Discipline & Clean Code**:
    - All styles must be declared using `StyleSheet.create` outside component render cycles.
    - Identifiers must be intention-revealing, with strict prohibition of abbreviations (`btn`, `val`, `res`, `req`, `usr`, `cb`, `temp`).
+
+---
+
+### Simplicity Ladder & Anti-AI-Slop
+
+1. Climb the seven rungs before writing code: (1) YAGNI — the feature is not needed; (2) reuse an existing
+   `src/features/**` or `src/components/**` unit; (3) a TypeScript/JavaScript stdlib primitive
+   (`Array.prototype` pipelines, `Object.groupBy`, `Intl`, optional chaining, nullish coalescing);
+   (4) an Expo platform-native capability already in the project (`expo-router` typed routes, `expo-constants`,
+   `expo-device`, `FlatList`/`FlashList` virtualization); (5) an already-installed npm dependency;
+   (6) a one-line idiomatic expression; (7) the smallest correct diff.
+2. Banned ceremonies: a one-line pass-through `app/` route that only re-exports a screen; a
+   single-implementation React context/hook abstraction with no test double need; a forwarding wrapper
+   component that adds no props or behavior; a narration comment restating the next line.
+3. Declare deliberate ceilings with the debt marker `// ponytail: <ceiling + evolution trigger>`; mark
+   remediation candidates with the tags `[DELETE] [STDLIB] [NATIVE] [YAGNI] [SHRINK]`.
+4. Safety frontier — never pruned: payload validation, error routing, privacy/PII handling, accessibility
+   props (`accessibilityRole`, `accessibilityLabel`) and the Quality Gates.
+
+### SOLID & Substitutability
+
+1. **S**: one reason to change per module/hook/component. **O**: extend through props, slots and new modules,
+   not by editing shared branches. **L**: a subtype/mock must honor every contract a consumer relies on.
+   **I**: narrow prop and hook return types over one broad bag. **D**: consume interfaces/callbacks, not concretions.
+2. Concrete substitutability failure mode: a component or hook that assumes a shape its declared prop type
+   does not promise (reading `item.foo` where the prop is `item?: Foo`), or a test double that silently
+   returns `undefined` where production returns a value.
+3. A production implementation never contains the stack placeholder `throw new Error('Not implemented'`
+   (`CC-09`); a partial contract is implemented, not shipped as a stub.
+
+### Dependency Inversion & Container Confinement
+
+1. Inject through props, hooks and module function parameters; keep dependencies immutable and explicit.
+2. The container/service-locator API (`container.get(`, `Container.get(`, `container.resolve(`, `getService(`)
+   is confined to the composition root and the presentation layer; it is **banned** in `src/domain/**`,
+   `src/data/**`, `src/services/**` and `src/repositories/**` (`CC-07`).
+3. The concrete network client (`axios.create(`, `new XMLHttpRequest(`, `new HttpClient(`) is never
+   instantiated outside the composition root; consumers depend on an abstraction or a single client module
+   (`CC-10`). Allowed roots here: `app/_layout.tsx`-style composition entrypoints, `src/di/**` and a single
+   `src/services/**/client.ts` factory.
+4. `fetch` is called through the project's single client wrapper, never ad hoc inside a screen or hook.
+
+### Non-Nullable Collections & Nullability Minimization
+
+1. Absence carries business meaning only when modelled explicitly; a collection parameter or return defaults
+   to a constant empty collection rather than `null`/`undefined`.
+2. The stack idiom for the constant empty default is a module-level `const EMPTY_ITEMS: readonly Item[] = []`;
+   a public parameter typed `Array`/`ReadonlyArray`/`Map`/`Set`/`[]` or unioned with `|undefined` without such
+   a default is a violation (`CC-08`).
+3. Non-null assertion operators (`!`) stay banned in production logic; narrow with optional chaining,
+   nullish coalescing or an explicit guard instead.
+
+### Two-Layer Resilience & Zero Silent Exception Swallowing
+
+1. Layer 1 (infrastructure): catch, log through the project logging interface with structured context plus
+   the error and its stack trace, then propagate or wrap into a domain error/result.
+2. Layer 2 (coordination): a defensive barrier at the boundary — request timeout, retry with backoff, stale
+   response guard, or an ErrorBoundary around route segments.
+3. Prohibited empty-handler shapes (`CC-06`): an empty `catch (...) { }` and a discarded `.catch(() => {})`
+   with neither a log call nor a rethrow. Error routing to a central handler counts as non-empty.
+
+### DRY Test Factories
+
+1. One local factory per entity, named `make<Entity>`, exported from the suite or a colocated `__fixtures__`
+   module; only parameters that actually vary in the suite, no dead or always-default parameters.
+2. Factories are deterministic: no ambient clock, random source or live network — inject fixed timestamps and
+   ids so Jest snapshots stay stable.
+3. Runner and facilities: Jest with the `jest-expo` preset, `@testing-library/react-native` render helpers and
+   `jest.fn()` doubles; assert behavior through the rendered tree, not on implementation internals.
+
+### Solution Abstraction Elevation (Rule of Two)
+
+1. When the same solution appears in two or more places, extract one shared abstraction in the same change
+   set — a `src/components/**` component, a `src/shared/**` hook, or a util — and migrate every caller.
+2. The naval razor: a single-implementation abstraction with no mock need is prohibited; do not create a hook,
+   context or interface that only exists to satisfy a pattern.
+3. Each elevation records its ceiling and the trigger that invalidates it, using the `// ponytail:` grammar.
+
+### Native / Multi-Platform Dependency Audit
+
+1. Native dependencies are declared through Expo Config Plugins in `app.json`/`app.config.ts` and pinned in
+   `package.json`; the lockfile and `npx expo-doctor` output are the acceptance evidence.
+2. Before a dependency is accepted, prove it builds across the EAS targets — development, preview and
+   production profiles — and that its config plugin resolves without conflicting with the existing plugin set.
+3. Audit transitive native compatibility in each downstream host repository that consumes the module, checking
+   for duplicate native symbols and Android/iOS autolinking collisions.
+
+### Memory & Allocation Discipline
+
+1. Avoidable-allocation shapes on hot render paths (`CC-11`, advisory): materializing a spread `[...items]`
+   inside a loop body and running `.map(...)` that builds a fresh array on every render without memoization.
+2. Inspect without copying: read from the existing array/reference; when nothing changes, return the original
+   reference so React's memoization and `FlatList`/`FlashList` diffing stay effective.
+3. No intermediate collections in list-render callbacks; hoist derived data out of the render path and key
+   lists stably.
+
+### Privacy by Design (Consent & PII Redaction)
+
+1. Consent gate before any personal data leaves the process or is persisted; third-party SDKs and analytics
+   providers are not initialized before consent is granted.
+2. Redaction is lazy and allocation-free: return the original reference unchanged when no value is redactable,
+   and only build a new object when a blocked key is actually present.
+3. Keep one keyword list of blocked PII keys in a single module; sanitize at the boundary, never scatter the
+   list across call sites. See `docs/standards/analytics_and_telemetry.md`.
+
+### Applicable Governance Checks
+
+- `CC-01`, `CC-02`, `CC-03`, `CC-04`, `CC-05`, `CC-06`, `CC-07`, `CC-08`, `CC-09`, `CC-10` are blocking under
+  the strict profile and advisory under the standard profile; `CC-11` is advisory in every profile. No check is
+  a no-op on this stack. `oaef clean-code` enforces these; see `docs/standards/governance_checks.md`.

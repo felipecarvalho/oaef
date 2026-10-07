@@ -20,3 +20,78 @@
 
 5. **Pure Domain Logic & Modularity**:
    - Isolate side effects (network, file I/O, database) behind repository protocols. Domain logic functions must remain pure and deterministic.
+
+---
+
+### Simplicity Ladder & Anti-AI-Slop
+
+1. Climb the seven rungs before writing code: **YAGNI** -> reuse what already exists in the repository -> **Python stdlib primitive** (`dataclasses`, `functools.cache`/`partial`, `itertools`, `pathlib`, `collections.defaultdict`/`Counter`, `enum`, structural pattern matching, `contextlib`) -> platform-native capability -> already-installed dependency -> one-line idiomatic expression -> smallest correct diff.
+2. Banned ceremonies: one-line pass-through use-case functions, single-implementation `Protocol`/ABC with no mock need, forwarding wrappers around a stdlib call, narration comments restating the next line, and `try/except` used as control flow.
+3. Declare a deliberate ceiling with `# ponytail: <ceiling + evolution trigger>` and remediate with `[DELETE] [STDLIB] [NATIVE] [YAGNI] [SHRINK]`.
+4. Safety frontier: validation, error routing, privacy, accessibility and Quality Gates are never pruned by the ladder.
+
+### SOLID & Substitutability
+
+1. **S**: one module/class per reason to change; **O**: extend via new functions/protocols, not `isinstance` chains; **L**: subtypes honor the base contract; **I**: small `Protocol` definitions over fat ABCs; **D**: depend on abstractions injected in.
+2. Concrete Python substitutability failure: a subclass raising `NotImplementedError` (or narrowing the promised behavior) where the base declares it — a Liskov violation.
+3. Production implementations never raise `raise NotImplementedError` in a contract method; implement the contract (`CC-09`).
+
+### Dependency Inversion & Container Confinement
+
+1. Inject dependencies through constructor parameters, `dataclass` fields or function arguments; never resolve them from module-level globals.
+2. `injector.get(`, `container.resolve(`, `Container().resolve(` are allowed **only** in the composition root (`main.py`, `**/di/**`, `**/composition_root*`); domain, data and service modules receive collaborators as arguments (`CC-07`).
+3. Concrete network clients (`requests.Session(`, `httpx.Client(`, `aiohttp.ClientSession(`) are never instantiated outside the composition root; depend on a `Protocol` (`CC-10`).
+4. Mutable lazy initialization (`value = value or ...`, `if value is None: value = ...` over a client/service/instance/provider field) is prohibited; build the dependency once in the composition root (`CC-03`).
+
+### Non-Nullable Collections & Nullability Minimization
+
+1. `None` is reserved for genuine business absence, never as a stand-in for "empty".
+2. A collection parameter or return defaults to a constant empty collection: `def f(items: Sequence[Item] = ()):`; use a tuple as the immutable default and `field(default_factory=tuple)` for dataclass fields.
+3. Public signatures must not expose `Optional[List[...]]`, `Optional[Dict[...]]`, `Optional[Set[...]]` or `list[...] | None` / `dict[...] | None` / `set[...] | None` without a non-null constant-empty default (`CC-08`).
+4. `assert x is not None` and `cast(...)` used to silence the type checker in production logic are banned; narrow with an explicit guard and a typed early return.
+
+### Two-Layer Resilience & Zero Silent Exception Swallowing
+
+1. Layer 1 (infrastructure): catch the specific exception, log with structured context plus the error and stack trace (`logging.getLogger(__name__)` or a structured logger), then propagate or wrap with `raise DomainError(...) from err`.
+2. Layer 2 (coordination): add a timeout, retry with backoff, or circuit breaker at the boundary that owns the policy.
+3. Prohibited empty-handler shapes: `except ...: pass`, a body-only `pass`, and a bare `except:` with no log and no rethrow (`CC-06`).
+4. Never swallow-and-continue: an empty handler that hides a failure is a contract-level defect.
+
+### DRY Test Factories
+
+1. One local factory fixture per entity under `tests/`, named `make_<entity>` (or `make<Entity>`), using `pytest` fixtures.
+2. Expose only the parameters that actually vary; drop dead parameters and unused defaults.
+3. Deterministic data only: no ambient clock, `random`, network or filesystem side effects — freeze or inject them.
+4. Use `pytest-mock`/fakes as doubles; keep the factory in `tests/conftest.py` or next to the suite that owns it.
+
+### Solution Abstraction Elevation (Rule of Two)
+
+1. When the same solution appears twice in the change set, extract one shared function, `Protocol` or dataclass and route both call sites through it.
+2. A single-implementation abstraction with no mock need is over-engineering and prohibited.
+3. Every elevation documents its ceiling and the trigger that would invalidate it.
+
+### Native / Multi-Platform Dependency Audit
+
+1. Declared dependencies live in `pyproject.toml` (or `requirements.txt`); audit the lock/constraints before accepting a new one.
+2. Confirm wheel availability for the target platforms (manylinux, macOS, Windows); a dependency without a wheel requires a source build.
+3. Compiled C extensions must match the interpreter ABI (`cp3xx`); verify the compatibility matrix across every deployed Python version.
+4. Install and import the dependency on each supported platform in CI before merging.
+
+### Memory & Allocation Discipline
+
+1. Hot paths avoid avoidable materialization: `list(...)`, `dict(...)` and `[...]` comprehensions inside a loop body (`CC-11`, advisory).
+2. Inspect without copying: iterate over the sequence/view directly, and return the original reference when nothing changes.
+3. Prefer generators and views (`itertools`, `map`/`filter`, `collections.deque`) over intermediate lists on repeated paths.
+
+### Privacy by Design (Consent & PII Redaction)
+
+1. No personal data leaves the process or is persisted before the consent gate is satisfied.
+2. Redaction is lazy and allocation-free: return the original reference when nothing is redactable.
+3. Keep one blocked-key keyword list in a single module; never duplicate it.
+4. Third-party SDKs are not initialized before consent; see `docs/standards/analytics_and_telemetry.md`.
+
+### Applicable Governance Checks
+
+1. `oaef clean-code` enforces these; see `docs/standards/governance_checks.md`.
+2. Apply `CC-01` (single-letter `lambda`/`except`/locals), `CC-02` (cryptic abbreviations), `CC-03` (mutable lazy init), `CC-04` (placeholder secrets), `CC-05` (`print(`), `CC-06` (silent swallowing), `CC-07` (container resolution), `CC-08` (nullable collections), `CC-09` (`raise NotImplementedError`), `CC-10` (concrete network clients); `CC-11` (hot-path allocation) is advisory.
+3. No documented no-ops apply to Python."}

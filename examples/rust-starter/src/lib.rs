@@ -1,9 +1,9 @@
-pub fn add(a: i32, b: i32) -> i32 {
-    a + b
+pub fn add(left: i32, right: i32) -> i32 {
+    left + right
 }
 
-pub fn multiply(a: i32, b: i32) -> i32 {
-    a * b
+pub fn multiply(left: i32, right: i32) -> i32 {
+    left * right
 }
 
 #[cfg(test)]

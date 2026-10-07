@@ -19,7 +19,12 @@ run_governance() {
   elif [ -f "tool/governance.go" ]; then
     go run tool/governance.go "$governance_command" "$@"
   elif [ -f "tool/governance.rs" ]; then
-    cargo run --bin governance -- "$governance_command" "$@"
+    local rust_binary=".oaef/governance-rust"
+    if [ ! -x "$rust_binary" ] || [ "tool/governance.rs" -nt "$rust_binary" ]; then
+      mkdir -p .oaef
+      rustc -O tool/governance.rs -o "$rust_binary" >/dev/null || { echo "rustc failed for tool/governance.rs"; exit 1; }
+    fi
+    "$rust_binary" "$governance_command" "$@"
   elif [ -f "tool/governance.swift" ]; then
     swift tool/governance.swift "$governance_command" "$@"
   elif [ -f "tool/governance.main.kts" ]; then
@@ -34,30 +39,58 @@ run_governance() {
   fi
 }
 
+has_governance_runtime() {
+  for candidate in tool/governance.dart tool/governance.mjs tool/governance.py tool/governance.go \
+    tool/governance.rs tool/governance.swift tool/governance.main.kts tool/Governance.cs tool/governance.sh; do
+    [ -f "$candidate" ] && return 0
+  done
+  return 1
+}
+
+mirror_agents_file() {
+  if [ -f "AGENTS.md" ]; then
+    {
+      echo "<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->"
+      echo "<!-- To modify rules, edit AGENTS.md and run \"oaef sync\". -->"
+      echo ""
+      cat AGENTS.md
+    } > CLAUDE.md
+    echo "✅ Synchronized AGENTS.md -> CLAUDE.md"
+  fi
+}
+
 case "$1" in
   init)
     shift
     "$SCRIPT_DIR/install.sh" "$@"
+    ;;
+  adopt)
+    shift
+    "$SCRIPT_DIR/install.sh" --legacy "$@"
+    ;;
+  upgrade)
+    shift
+    "$SCRIPT_DIR/install.sh" --upgrade "$@"
     ;;
   export)
     "$SCRIPT_DIR/bundle.sh"
     ;;
   sync)
     echo "🔄 Running OAEF Multi-Tool Synchronization..."
-    if [ -f "tool/governance.dart" ] || [ -f "tool/governance.mjs" ] || [ -f "tool/governance.py" ] || [ -f "tool/governance.go" ] || [ -f "tool/governance.rs" ] || [ -f "tool/governance.swift" ] || [ -f "tool/governance.main.kts" ] || [ -f "tool/Governance.cs" ] || [ -f "tool/governance.sh" ]; then
+    if has_governance_runtime; then
       run_governance sync
+      run_governance skills sync-mirrors || true
     else
-      # Portable sync: copy AGENTS.md to CLAUDE.md
-      if [ -f "AGENTS.md" ]; then
-        echo "<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->" > CLAUDE.md
-        cat AGENTS.md >> CLAUDE.md
-        echo "✅ Synchronized AGENTS.md -> CLAUDE.md"
-      fi
+      mirror_agents_file
     fi
     ;;
   lint)
     shift
     run_governance lint "$@"
+    ;;
+  clean-code|governance-check)
+    shift
+    run_governance clean-code "$@"
     ;;
   audit|quality-gate)
     shift
@@ -67,12 +100,47 @@ case "$1" in
     shift
     run_governance doctor "$@"
     ;;
+  ponytail)
+    shift
+    case "${1:-debt}" in
+      audit)
+        shift
+        run_governance ponytail-audit "$@"
+        ;;
+      debt|*)
+        [ "${1:-}" = "debt" ] && shift
+        run_governance ponytail-debt "$@"
+        ;;
+    esac
+    ;;
+  skills)
+    shift
+    case "${1:-audit}" in
+      audit)
+        shift
+        run_governance skills-audit "${1:---selftest}" "$@"
+        ;;
+      route)
+        shift
+        run_governance skills-route "$@"
+        ;;
+      sync-mirrors)
+        shift
+        run_governance skills sync-mirrors "$@"
+        ;;
+      *)
+        echo "Unknown skills subcommand: $1"
+        echo "Usage: oaef skills <audit [--selftest]|route \"<prompt>\"|sync-mirrors [--check]>"
+        exit 1
+        ;;
+    esac
+    ;;
   metrics)
     shift
     run_governance metrics "$@"
     ;;
   version|-v|--version)
-    cat "$SCRIPT_DIR/VERSION" 2>/dev/null || echo "1.0.0"
+    cat "$SCRIPT_DIR/VERSION" 2>/dev/null || echo "1.1.0"
     ;;
   *)
     echo "Open Agentic Engineering Framework (OAEF) CLI"
@@ -80,10 +148,15 @@ case "$1" in
     echo ""
     echo "Commands:"
     echo "  init        Run the interactive Discovery Interview to bootstrap a repository"
-    echo "  sync        Synchronize AGENTS.md with CLAUDE.md and IDE agent mirrors"
-    echo "  lint        Audit link integrity, cascade references, and secret scanning"
+    echo "  adopt       Adopt OAEF into an existing repository (advisory barriers + adoption ledger)"
+    echo "  upgrade     Upgrade an earlier OAEF installation in place (user content preserved)"
+    echo "  sync        Synchronize AGENTS.md with CLAUDE.md and rebuild the harness skill mirrors"
+    echo "  lint        Audit links, cascade references, secrets, suppressions, clean code and skills"
+    echo "  clean-code  Run the governance barriers (docs/standards/governance_checks.md)"
     echo "  audit       Execute the multidimensional Quality Gate audit"
-    echo "  doctor      Audit OAEF conformance (structure, skills, mirrors, community files)"
+    echo "  doctor      Audit OAEF conformance (structure, standards, skills, mirrors, self-test)"
+    echo "  ponytail    Report simplicity debt: 'oaef ponytail debt' / 'oaef ponytail audit'"
+    echo "  skills      Skill activation: 'audit [--selftest]', 'route \"<prompt>\"', 'sync-mirrors [--check]'"
     echo "  metrics     Display the current baseline thresholds"
     echo "  export      Bundle OAEF into a clean release ZIP archive"
     echo "  version     Display the framework version"

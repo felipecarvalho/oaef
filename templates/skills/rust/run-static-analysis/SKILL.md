@@ -1,30 +1,60 @@
 ---
 name: run-static-analysis
-description: Specialized run-static-analysis skill for Rust under the Open Agentic Engineering Framework (OAEF).
+description: >-
+  Use when the analyzer, linter or type checker reports findings in Rust. Triggers on: "analyze", "lint",
+  "typecheck", "warnings". Chains into: code-review. Runs the Rust analyzer with warnings treated as
+  errors and zero suppressions: every finding is fixed in the code instead of being silenced with an
+  inline ignore directive, and machine-generated files stay the only exemption.
+argument-hint: "[scope or analyzer]"
+license: MIT
 metadata:
   framework: OAEF
   stack: rust
-  version: 1.0.0
+  version: 1.1.0
 ---
 
-# Run Static Analysis (Rust)
+# Static Analysis (Rust)
 
-> **Stack Profile:** Rust  
-> **Governance Standard:** OAEF v1.0.0 (Author: Felipe Carvalho)  
-> **Quality Gate Policy:** Strict mathematical audit and Clean Sizing.
+> **Stack Profile:** Rust
+> **Governance Standard:** OAEF v1.1.0 (Author: Felipe Carvalho)
+> **Skill Class:** primary
 
-## Mission & Scope
-Execute strict static analysis and apply mechanical automated fixes in Rust.
+## Mission
+Run the Rust analyzer with warnings as errors and zero suppressions, so every diagnostic is answered by
+a code change instead of an inline `#[allow]`.
 
-## Commands
-```bash
-# Static analysis check:
-cargo clippy -- -D warnings
+## Territory
+- `src/**/*.rs` — the analyzed production code.
+- `tests/**/*.rs` — integration tests, analyzed for correctness but not for production checks.
+- `examples/**` — preview binaries, kept warning-free.
+- `tool/` — the governance binary; the only region allowed a documented exemption.
 
-# Automated mechanical fixes:
-cargo fmt
-```
+## Analyzer Invocation
+- `cargo clippy --all-targets -- -D warnings` — the primary gate; warnings fail the build.
+- `cargo check --all-targets` — fast type checking before the full lint pass.
+- `cargo fmt --check` — formatting parity; apply with `cargo fmt` rather than editing by hand.
+- `oaef lint` runs the governance checks (`SK-*`, secrets) alongside the native analyzer.
+- Run the analyzer over the whole workspace after any change, not only the touched module.
 
-## Rules
-- Zero warnings and zero errors allowed.
-- Never add inline ignore comments to bypass rules. Fix the underlying architectural violation.
+## Zero-Suppression Policy
+- No inline `#[allow(...)]` or `#![allow(...)]` in production code; fix the underlying finding.
+- No `--cap-lints allow`, no `[lints]` table that downgrades a lint to silence it.
+- When a generated file genuinely cannot be fixed, the exemption is declared once, scoped as narrowly as
+  possible, and noted in `docs/wiki/log.md`; generated code is the only valid exemption.
+- Deprecation warnings are fixed by migrating to the replacement, never by suppressing the warning.
+- Treat a newly added suppression as a review blocker in the strict profile.
+
+## Repository Conformance Gate
+- `cargo run --bin governance -- clean-code`
+- `oaef lint`, `oaef doctor`
+- Record unresolved findings in `docs/wiki/memory/handoff.md`.
+
+## Exit Criteria
+- `cargo clippy --all-targets -- -D warnings` is clean across the workspace.
+- No unsanctioned suppression directive remains in production code.
+
+## Anti-Patterns
+- `#[allow(dead_code)]` used to keep unused code compiling.
+- Downgrading a lint in `Cargo.toml` or `clippy.toml` to hide findings.
+- Fixing only the touched file while the workspace stays warning-ridden.
+- Applying `cargo fmt` and committing unrelated reformatting churn.

@@ -60,10 +60,15 @@ Before opening a Pull Request, run the local verification suite:
 # Inside an OAEF-governed project (after `oaef init`), the CLI exposes the same audits:
 ./bin/oaef doctor   # conformance: structure, skills, mirrors, community files
 ./bin/oaef lint     # link integrity, cascade references, and secret scanning
+./bin/oaef clean-code   # CC-* governance barriers (see docs/standards/governance_checks.md)
 ./bin/oaef audit    # multidimensional Quality Gate audit
+./bin/oaef skills audit --selftest   # skill parity + frontmatter + routing fixtures (SK-01..SK-06)
+./bin/oaef skills sync-mirrors --check   # harness mirror parity (SK-05)
 ./bin/oaef sync     # synchronize AGENTS.md with the CLAUDE.md mirror
 ```
 All checks must pass with zero errors, zero warnings, and zero secret detections.
+
+The normative catalog of every governance check is [`docs/standards/governance_checks.md`](docs/standards/governance_checks.md): it defines the `CC-*` clean-code barriers, the `SK-*` skill-activation invariants and `PT-01`, their semantics, canonical messages and per-stack realization. Adding or changing a check is a cross-cutting change: per the Event-to-Documentation Matrix (`AGENTS.md` §8), a new governance check MUST simultaneously update the catalog, all 12 native runtime engines and `docs/wiki/metrics/baseline.json`, and is verified by `oaef doctor` plus `scripts/self-audit.sh`.
 
 ### Step 4: Submitting a Pull Request
 1. Open a PR against `main`.

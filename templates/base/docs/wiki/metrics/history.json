@@ -10,6 +10,11 @@
       "unallowed_ignores": 0,
       "oversized_files": 0,
       "oversized_methods": 0,
+      "clean_code_violations": 0,
+      "silent_catches": 0,
+      "nullable_collections": 0,
+      "unimplemented_placeholders": 0,
+      "ponytail_debt_markers": 0,
       "secret_leaks": 0
     }
   }

@@ -1,7 +1,7 @@
 # The OAEF Manifesto: Software Engineering in the Age of AI
 > *«The repository that writes its own memory for whoever arrives next.»*  
 > **Author & Creator:** Felipe Carvalho  
-> **Version:** 1.0.0 — September 2026  
+> **Version:** 1.1.0 — October 2026  
 > **License:** Apache License 2.0  
 
 ---
@@ -43,7 +43,7 @@ $$\mathbf{Compiler / Typechecker} > \mathbf{Automated Tests} > \mathbf{Source Co
 
 ---
 
-### The 4 Architectural Pillars
+### The 5 Architectural Pillars
 
 ```mermaid
 flowchart TD
@@ -63,9 +63,14 @@ flowchart TD
         MEM["Persistent Local Ledger<br/>• docs/wiki/memory/handoff.md<br/>• docs/wiki/log.md (Append-Only)<br/>• Native scripts (tool/governance.*)"]
     end
 
+    subgraph P5 ["Pillar 5: Minimalism & Design Integrity"]
+        MIN["Simplicity Ladder + SOLID<br/>• YAGNI > Reuse > stdlib > native > dependency > one line<br/>• SOLID & mechanical barriers (CC-*, SK-*, PT-01)<br/>• Zero AI slop, zero speculative abstraction"]
+    end
+
     P1 --> SDD
     SDD --> QG
     QG --> MEM
+    MEM --> MIN
 ```
 
 #### 1. Context Engineering (Google OKF & Karpathy LLM Wiki)
@@ -92,6 +97,12 @@ Code quality is not a matter of subjective code review opinions; it is an algori
 #### 4. Continuous Memory & Zero-Docker Philosophy
 * **Session Handoff**: Inter-session memory lives natively in `docs/wiki/memory/handoff.md` and `docs/wiki/log.md`.
 * **Zero Ghost Complexity**: No slow Docker containers, no heavy vector databases, and no background daemons. All validation runs natively in the project's own language within milliseconds.
+
+#### 5. Minimalism & Design Integrity (Simplicity Ladder + SOLID)
+The best code is the code you did not have to write. Before any implementation the agent climbs the **Simplicity Ladder (the Ponytail Ladder)**: YAGNI > reuse in codebase > language/stdlib primitives > platform-native capability > already-installed dependency > one-line idiomatic expression > smallest correct diff. Alongside it, **SOLID** keeps every class, module, service and component under single responsibility, segregated contracts, inverted dependencies and strict substitutability. Ceremonial layers, speculative abstraction and AI slop are rejected by design, while the safety frontier (input validation, error routing, privacy/consent, accessibility and every Quality Gate) is never pruned. See [`docs/standards/clean_code.md`](templates/base/docs/standards/clean_code.md) and [`docs/standards/solid.md`](templates/base/docs/standards/solid.md).
+
+#### Governance Checks (Mechanical Enforcement)
+Minimalism and design integrity are enforced mechanically in all 12 supported stacks, not left to reviewer taste. Every governance runtime implements the normative catalog in [`docs/standards/governance_checks.md`](templates/base/docs/standards/governance_checks.md): the `CC-*` clean-code barriers (naming, non-nullable collections, service-locator confinement, silent exception swallowing, unimplemented placeholders, dependency-inversion leaks, hot-path allocation), the `SK-*` skill-activation invariants (parity, frontmatter quality, trigger coherence, harness mirror parity, routing self-test) and the report-only `PT-01` simplicity-debt markers. Findings print as `<CHECK-ID> <path>:<line> — <message>`; under the `strict` profile they block the build (`oaef clean-code`), while `standard` and adoption modes report them as advisory except `CC-04` (hardcoded secrets) and `SK-05` (mirror divergence), which block under every profile.
 
 ---
 

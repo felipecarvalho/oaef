@@ -1,5 +1,6 @@
-def add(a: int, b: int) -> int:
-    return a + b
+def add(left: int, right: int) -> int:
+    return left + right
 
-def multiply(a: int, b: int) -> int:
-    return a * b
+
+def multiply(left: int, right: int) -> int:
+    return left * right

@@ -1,0 +1,17 @@
+{
+  "version": "0.9.0",
+  "framework": "in-house",
+  "profile": "legacy",
+  "baseline": {
+    "coverage": {
+      "lines_min_percentage": 92.0,
+      "statements_min_percentage": 92.0,
+      "functions_min_percentage": 92.0,
+      "branches_min_percentage": 85.0
+    },
+    "clean_sizing": {
+      "max_oversized_files": 0,
+      "file_max_lines": 300
+    }
+  }
+}

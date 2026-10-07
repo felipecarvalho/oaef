@@ -1,44 +1,67 @@
 ---
 name: conformance-audit
-description: Repository conformance audit skill for Rust under the Open Agentic Engineering Framework (OAEF).
+description: >-
+  Use when verifying that the repository, its skills or its governance artifacts conform to the framework
+  in Rust. Triggers on: "conformance", "doctor", "parity", "frontmatter". Chains into: code-review.
+  Audits repository conformance: structure, mirror parity, the 13 skills with their frontmatter and
+  harness mirrors, governance entrypoints and community files, then reports every divergence as a
+  blocking finding.
+argument-hint: "[scope: repository|skills|docs]"
+license: MIT
 metadata:
   framework: OAEF
   stack: rust
-  version: 1.0.0
+  version: 1.1.0
 ---
 
-# Conformance Audit (Rust)
+# Repository Conformance Audit (Rust)
 
-> **Stack Profile:** Rust  
-> **Trigger:** Before declaring any task complete, before a Pull Request, or when onboarding an existing repository.
+> **Stack Profile:** Rust
+> **Governance Standard:** OAEF v1.1.0 (Author: Felipe Carvalho)
+> **Skill Class:** entrypoint
+
+## Mission
+Verify that the repository conforms to the framework: the mandatory structure exists, the skills are
+complete and correctly declared, the harness mirrors match, and every governance entrypoint is wired.
+
+## Territory
+- `AGENTS.md`, `CLAUDE.md`, `llms.txt`, `README.md` — the root contract and entrypoints.
+- `.agents/skills/**` and every harness mirror directory.
+- `docs/standards/**`, `docs/INDEX.md`, `docs/MANIFESTO.md` — canonical standards.
+- `tool/` — the native governance engine (`cargo run --bin governance`).
 
 ## What This Skill Verifies
-1. **Structure** — `AGENTS.md`, `CLAUDE.md`, `llms.txt`, `oaef.context.json`, the full `docs/` tree, `docs/HARNESSES.md`.
-2. **Mirror parity** — `CLAUDE.md` is an exact mirror of `AGENTS.md`.
-3. **Skills** — the 11 canonical skills exist under `.agents/skills/`.
-4. **Governance runtime** — `tool/governance.*` is present and executable.
-5. **Community files** — `.github/` templates, CI workflow, `CONTRIBUTING.md`, `SECURITY.md`, `.gitignore`.
-6. **Hygiene** — no unresolved `{{...}}` placeholders, no secrets, no unallowed suppressions.
+- Structure: the canonical directories, standards documents and community files are present.
+- Skills: all 13 canonical skills exist, each with `## Territory` and `## Repository Conformance Gate`.
+- Frontmatter quality: `name` equals the directory, the `description` starts with `Use when`, carries
+  `Triggers on:` and `Chains into:`, and holds at least 150 characters.
+- Entrypoint parity: `llms.txt` lists every skill; `README.md`, `docs/INDEX.md` and `docs/MANIFESTO.md`
+  reference `llms.txt`.
+- Mirror parity: each present harness skill directory matches `.agents/skills` byte for byte.
+- Governance entrypoints: the native engine answers every subcommand and the CI calls the same suite.
 
 ## Deterministic Procedure
-1. Run the conformance audit:
-   `oaef doctor` (native: `cargo run --bin governance -- doctor`).
-2. Run the quality audits:
-   `oaef lint` and `oaef audit` (native: `cargo run --bin governance -- lint` / `cargo run --bin governance -- quality-gate`).
-3. Resolve every ❌:
-   - Missing artifact → restore it from the OAEF framework templates.
-   - Mirror divergence → `oaef sync`.
-   - Unresolved placeholder → re-run the installer with `--backup --force` or fix the file manually.
-   - Baseline/coverage failure → follow `docs/wiki/metrics/baseline.json` (Monotonic Ratchet: raise the floor, never lower it).
-4. Record the audit outcome (pass/fail + findings) in `docs/wiki/memory/handoff.md`.
-5. NEVER silence a failing gate; the Inviolable Trust Hierarchy always prevails.
+1. `oaef doctor` — structural, standards and skill prerequisites.
+2. `oaef skills audit` — skill parity (`SK-01`), frontmatter quality (`SK-02`) and entrypoint parity
+   (`SK-03`).
+3. `oaef skills audit --selftest` — the routing fixture table resolves exactly (`SK-06`).
+4. `oaef skills route "<prompt>"` — spot-check a dispatch prompt against its expected skill (`SK-04`).
+5. `oaef skills sync-mirrors --check` — mirror parity without writing (`SK-05`); repair with
+   `oaef skills sync-mirrors`.
+6. `oaef lint` — secrets and remaining governance invariants.
+7. `cargo run --bin governance -- clean-code` — the native realization of the clean-code suite.
+
+## Repository Conformance Gate
+- `cargo run --bin governance -- clean-code`
+- `oaef lint`, `oaef doctor`
+- Record unresolved findings in `docs/wiki/memory/handoff.md`.
 
 ## Exit Criteria
-- `oaef doctor` exits 0 (all checks passed).
-- `oaef lint` reports zero parity, secret, or suppression findings.
-- `oaef audit` satisfies the baseline coverage and clean sizing floors.
+- `oaef doctor` and `oaef skills audit --selftest` both exit clean.
+- Every divergence is reported as a blocking finding with its check identifier.
 
 ## Anti-Patterns
-- Declaring a task complete with a failing conformance audit.
-- Editing `CLAUDE.md` directly instead of `AGENTS.md` + `oaef sync`.
-- Loosening `baseline.json` floors to make the audit pass.
+- Declaring conformance from a partial run that skipped the self-test.
+- Repairing mirrors by hand instead of `oaef skills sync-mirrors`.
+- Treating a missing standard document as a warning rather than a blocker.
+- Editing the routing fixture to make the self-test pass.

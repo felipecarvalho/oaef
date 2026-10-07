@@ -85,11 +85,38 @@ Because OAEF installs exactly these two artifacts, **zero per-harness rewriting 
 | [`.agents/skills/`](../.agents/skills/) | Codex, OpenCode, Antigravity, Cursor, Windsurf, Goose, OpenHands, Cline, Factory, Junie | No |
 | [`CLAUDE.md`](../CLAUDE.md) | Claude Code | Yes — generated from `AGENTS.md` by `oaef sync` |
 
-The 10 OAEF skills conform to the Agent Skills specification (`name` matching the directory, `description` present), which is validated by the harnesses that discover `.agents/skills/` at runtime.
+The 13 OAEF skills conform to the Agent Skills specification; conformance rules and the per-harness mirror directories are documented in §6 below.
 
 ---
 
-## 6. Sources (verified August–September 2026)
+## 6. Skill Activation & Harness Mirrors
+
+OAEF ships the canonical skill catalog in [`.agents/skills/`](../.agents/skills/). A harness that discovers skills elsewhere needs a **mirror** of that catalog alongside the canonical copy. `oaef skills sync-mirrors` rebuilds every mirror; `oaef skills sync-mirrors --check` validates parity without writing and reports divergences as `SK-05`.
+
+| Skills directory | Harness | Kind | Rebuild |
+| :--- | :--- | :--- | :--- |
+| [`.agents/skills/`](../.agents/skills/) | Codex, OpenCode, Antigravity, Cursor, Windsurf, Goose, OpenHands, Cline, Factory, Junie | Native (canonical source) | — |
+| `.claude/skills/` | Claude Code | Mirror (symlink or copy) | `oaef skills sync-mirrors` |
+| `.cursor/rules/` | Cursor Agent CLI | Mirror (symlink or copy) | `oaef skills sync-mirrors` |
+| `.windsurf/skills/` | Windsurf | Mirror (symlink or copy) | `oaef skills sync-mirrors` |
+| `.cline/skills/` | Cline | Mirror (symlink or copy) | `oaef skills sync-mirrors` |
+| `.grok/agents/` | Grok Build | Mirror (symlink or copy) | `oaef skills sync-mirrors` |
+
+A mirror is written as a symlink when the platform allows it, otherwise as a recursive copy compared by content hash. A mirror the user has modified is never overwritten: `--check` reports `SK-05` and preserves it. Pass `--no-mirrors` at install time to skip mirror creation entirely.
+
+### 6.1 Agent Skills Conformance
+
+Every `SKILL.md` MUST satisfy the Agent Skills specification:
+
+- `name` equals the directory name.
+- the description starts with `Use when` and carries `Triggers on:` and `Chains into:`.
+- the allowed frontmatter keys are `name`, `description`, `argument-hint`, `license`, `metadata`.
+
+`oaef skills audit` validates all of it — parity, frontmatter quality, entrypoint parity, trigger coherence and harness mirror parity — and `oaef skills audit --selftest` proves routing by resolving the canonical prompt-to-skill fixture table (`SK-06`).
+
+---
+
+## 7. Sources (verified August–September 2026)
 
 - **Winder.AI** — *A Comparison of AI Agent Harnesses in 2026* (20 Aug 2026).
 - **Zenn (suwash)** — *Extension Design for Consistent Behavior Across Coding Agents* (07 Aug 2026).

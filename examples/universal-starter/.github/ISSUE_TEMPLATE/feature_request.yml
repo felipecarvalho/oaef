@@ -1,0 +1,39 @@
+name: Feature Request
+description: Propose a new feature, ecosystem enhancement, or capability
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggest an idea or enhancement for OAEF.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution / Architectural Concept
+      description: Describe how this feature should work and adhere to OAEF Pillars.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you considered.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Architecture Alignment
+      options:
+        - label: This proposal maintains Zero-Docker / Zero-Daemon invariants.
+          required: true
+        - label: This proposal preserves strict language isolation.
+          required: true

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: OAEF Documentation & Specification
+    url: https://github.com/felipecarvalho/oaef
+    about: Read the official OAEF Specification, Living Docs, and Architecture Manifesto
