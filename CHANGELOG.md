@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.1] - 2026-10-07
+
+### Fixed
+- **Kotlin dispatch-matrix parsing (`SK-04`)**: `matrixRows()` read the wrong columns because Kotlin's
+  `String.split` drops trailing empty strings, so a five-column row yields six cells and the Meta-Skill
+  column was parsed as the primary skill. Twelve of the thirteen skills were reported as having no matrix
+  row. Indices corrected (`cells[3]` triggers, `cells[4]` primary) with a defensive separator-row skip and
+  per-keyword trigger reporting.
+- **`kotlinc -script` flag handling**: the Kotlin compiler consumes leading-dash arguments before the
+  script, so `skills-audit --selftest` and `clean-code --standard` failed with
+  `error: invalid argument: --selftest`. The command line now travels through `OAEF_GOVERNANCE_ARGS` from
+  `bin/oaef` and `scripts/self-audit.sh`, while direct invocation keeps working through the script `args`.
+
+### Changed
+- **Attribution**: the Simplicity Ladder is credited to **Dietrich Gebert — Ponytail minimalism** not only in
+  `README.md` but also in `NOTICE` (which every distribution must retain), in both `MANIFESTO.md` files and in
+  the twelve `ponytail` skills, so the credit travels into every installed repository. `NOTICE` also moved
+  from "4 Pillars" to "5 Pillars" and names SOLID explicitly.
+
+> Verification: the framework self-audit passes for all 12 stacks, and the GitHub Actions matrix — which runs
+> `doctor`, `lint`, `clean-code`, `skills audit --selftest` and `clean-code --standard` on every stack, Kotlin
+> and .NET included — is green.
+
 ## [1.1.0] - 2026-10-06
 
 ### Added
