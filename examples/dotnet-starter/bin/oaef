@@ -28,7 +28,8 @@ run_governance() {
   elif [ -f "tool/governance.swift" ]; then
     swift tool/governance.swift "$governance_command" "$@"
   elif [ -f "tool/governance.main.kts" ]; then
-    kotlinc -script tool/governance.main.kts "$governance_command" "$@"
+    # kotlinc parses leading-dash flags before the script, so the command line travels via the environment
+    OAEF_GOVERNANCE_ARGS="$governance_command $*" kotlinc -script tool/governance.main.kts
   elif [ -f "tool/Governance.cs" ]; then
     dotnet run --project tool/Governance.csproj "$governance_command" "$@"
   elif [ -f "tool/governance.sh" ]; then

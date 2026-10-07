@@ -155,7 +155,7 @@ The framework fixes its stack-adaptive skill catalog at 13 skills. Every skill l
 
 | Skill | Purpose |
 | :--- | :--- |
-| `ponytail` | Simplicity ladder, anti-AI-slop, root-cause fixes and debt markers. |
+| `ponytail` | Simplicity ladder, anti-AI-slop, root-cause fixes and debt markers (inspired by Dietrich Gebert's *Ponytail* minimalism). |
 | `nullable-types` | Strict, defensive null-safety and guard clause patterns. |
 | `architecture-audit` | Verify module decoupling, boundaries, and sizing bounds. |
 | `screen-builder` | Vertical feature construction respecting Clean Sizing. |
@@ -268,7 +268,7 @@ The **Open Agentic Engineering Framework (OAEF)** was created and authored by **
 - **Jeremy Howard / Answer.ai**: */llms.txt Standard* (Machine-friendly token navigation).
 - **Very Good Ventures (VGV)**: *Strict Linting & 100% Coverage Culture*.
 - **Robert C. Martin (Uncle Bob)**: *Clean Code Craftsmanship* (Meaningful names, ban on abbreviations/flag arguments, clean sizing) and the SOLID principles behind Pillar 5.
-- **Dietrich Gebert — Ponytail minimalism**: the Simplicity Ladder that rejects AI slop and speculative abstraction in favor of the smallest correct diff.
+- **Dietrich Gebert — Ponytail minimalism** (the origin of the Simplicity Ladder in Pillar 5 and of the `ponytail` skill): the Simplicity Ladder that rejects AI slop and speculative abstraction in favor of the smallest correct diff.
 - **Michael Nygard**: *Architecture Decision Records (ADR)*.
 - **Dan North & Martin Fowler**: *Behavior-Driven Development (BDD)*.
 - **Cyrille Martraire**: *Living Documentation*.

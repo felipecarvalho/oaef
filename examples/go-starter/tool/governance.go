@@ -1574,7 +1574,7 @@ func runSync() {
 	}
 	var builder strings.Builder
 	builder.WriteString("<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->\n")
-	builder.WriteString("<!-- To modify rules, edit AGENTS.md and run 'oaef sync'. -->\n")
+	builder.WriteString("<!-- To modify rules, edit AGENTS.md and run \"oaef sync\". -->\n")
 	builder.WriteString("\n")
 	builder.Write(data)
 	if err := os.WriteFile("CLAUDE.md", []byte(builder.String()), 0o644); err != nil {

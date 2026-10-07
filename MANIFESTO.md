@@ -109,3 +109,8 @@ Minimalism and design integrity are enforced mechanically in all 12 supported st
 ## 3. The Non-Negotiable Commitment
 
 > *«Any software engineer or AI agent contributing to an OAEF repository agrees to be evaluated by the same Quality Gates, to specify behavior before implementation, to respect architectural boundaries, and to leave the repository in a cleaner state than when it was found.»*
+
+## Foundational Citations
+
+- **Dietrich Gebert — Ponytail minimalism**: the Simplicity Ladder of Pillar 5.
+- **Robert C. Martin (Uncle Bob)**: Clean Code and SOLID.

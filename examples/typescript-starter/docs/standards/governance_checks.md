@@ -112,7 +112,7 @@ Each engine translates the semantics of §3 into the native mechanisms below. To
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `CC-01` | `(x) =>`, `.having((x) =>`, `catch (e)`, `final x =` / `var x =` (excludes `for (var i =`) | `(x) =>`, `catch (e)`, `const x =` / `let x =` | `lambda x:`, `except ... as x`, single-letter local assignment | closure `func(x T)`, `x :=` | `\|x\|`, `let x =` | `{ x ->`, `val x =` / `var x =` | `{ x in`, `let x =` / `var x =` | `(x) =>`, `catch (Exception x)`, `var x =` / `string x =` / `bool x =` | shell `local x=`; JS/TS tokens |
 | `CC-02` | declaration/parameter regex over the token list | same | same | same | same | same | same | same | same |
-| `CC-03` | `??=` over `_?client\|instance\|service\|provider` | `??=` over the same field names | `x = x or ...`, `if x is None: x = ...` over the same field names | `??=` over the same field names | no-op | `??=` over the same field names | no-op | `??=` over the same field names | `??=` over the same field names |
+| `CC-03` | `??=` over `_?client\|instance\|service\| no-op | `??=` over the same field names | no-op | `??=` over the same field names | no-op | `??=` over the same field names | no-op | `??=` over the same field names | `??=` over the same field names |
 | `CC-04` | placeholder/secret assignment and identifier tokens | same | same | same | same | same | same | same | same |
 | `CC-05` | `print(` | `console.log(`, `console.debug(`, `console.warn(` | `print(` | `fmt.Print`, `fmt.Println`, `fmt.Printf`, `println(` | `println!`, `print!`, `dbg!` | `println(` | `print(` | `Console.Write`, `Console.WriteLine`, `Debug.WriteLine`, `Console.Error.Write` | the union of the tokens above (polyglot tree) |
 | `CC-06` | empty inline and multiline `catch (...) { }` | `catch (...) { }` | `except [^:]*: pass` and body-only `pass` | empty `if err != nil { }`, `_ = err`, empty `recover()` | discarded `.ok();`, `if let Err(_) = ... { }`, `Err(_) => { }` | `catch (...) { }` | empty `catch { }` | empty `catch { }` | the union of the handler shapes above (polyglot tree) |
@@ -154,7 +154,7 @@ SK-03 — skill "<name>" is not listed in llms.txt / entrypoint <file> does not 
 SK-04 — trigger "<keyword>" for skill "<name>" is missing from its frontmatter "Triggers on:" / skill "<name>" has no dispatch-matrix row
 SK-05 — harness mirror "<dir>" diverges from .agents/skills for skill "<name>" (run: oaef skills sync-mirrors)
 SK-06 — routing self-test failed: prompt "<prompt>" resolved to "<got>" but expected "<expected>"
-PT-01 — ponytail debt marker: <path>:<line> — <reason>
+PT-01 — ponytail debt marker (emitted as: PT-01 <path>:<line> — <reason>)
 ```
 
 `CC-04` is blocking under every profile. `SK-05` is blocking under every profile. Everything else in the `CC-*` family is blocking under `strict` and advisory under `standard` and under any adoption mode (§9).

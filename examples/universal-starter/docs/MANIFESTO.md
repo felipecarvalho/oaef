@@ -4,6 +4,14 @@
 
 ---
 
+## Foundational Citations
+
+- **Dietrich Gebert — Ponytail minimalism**: the Simplicity Ladder of Pillar 5 — the smallest correct
+  diff, zero AI slop, no speculative abstraction.
+- **Robert C. Martin (Uncle Bob)**: Clean Code craftsmanship and the SOLID principles behind Pillar 5.
+
+---
+
 ## 1. Executive & Business Vision
 
 ### The Problem This Repository Eliminates

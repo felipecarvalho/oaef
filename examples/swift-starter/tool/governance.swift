@@ -1103,7 +1103,7 @@ func runCleanCode(overrideStandard: Bool) {
 func runSync() {
     guard let agents = readText(AGENTS_FILE) else { return }
     let banner = "<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->\n"
-        + "<!-- To modify rules, edit AGENTS.md and run 'oaef sync'. -->\n\n"
+        + "<!-- To modify rules, edit AGENTS.md and run \"oaef sync\". -->\n\n"
     let content = banner + agents
     try? content.write(toFile: "CLAUDE.md", atomically: true, encoding: .utf8)
     out("✅ Synchronized AGENTS.md -> CLAUDE.md")

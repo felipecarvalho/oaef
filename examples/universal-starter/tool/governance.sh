@@ -98,6 +98,10 @@ resolve_profile() {
   fi
   ADOPTION_MODE="$(json_value adoption_mode "$CONTEXT_FILE")"
   [ -n "$ADOPTION_MODE" ] || ADOPTION_MODE="install"
+  # In adoption mode the effective profile is the adoption mode itself: the clean-code
+  # summary then reports `legacy`/`upgrade` (spec section 2) and every CC-* stays
+  # advisory, while `--standard` can still override the word for a single invocation.
+  [ "$ADOPTION_MODE" != "install" ] && PROFILE="$ADOPTION_MODE"
 }
 
 is_adoption() { [ "$ADOPTION_MODE" != "install" ]; }
@@ -273,7 +277,8 @@ check_identifier_discipline() {
       -e 's/.*catch[[:space:]]*\([[:space:]]*[A-Za-z_.]*[[:space:]]*([A-Za-z][A-Za-z0-9_]*)[[:space:]]*\).*/\1/p' \
       -e 's/.*except[[:space:]]+[A-Za-z_.]+[[:space:]]+as[[:space:]]+([A-Za-z_][A-Za-z0-9_]*).*/\1/p' \
       -e 's/.*lambda[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*:.*/\1/p' \
-      -e 's/^[[:space:]]*([a-z])[[:space:]]*[=:].*/\1/p' | head -1)"
+      -e 's/^[[:space:]]*([a-z])[[:space:]]*[=:].*/\1/p' \
+      -e 's/^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*=[^=].*/\1/p' | head -1)"
 
     [ -n "$name" ] || continue
 
@@ -351,15 +356,19 @@ check_raw_prints() {
 check_silent_catches() {
   local file="$1"
   case "$file" in *.sh|*.bash) return 0 ;; esac
-  awk -v file="$file" '
+  # The awk pass only reports the 1-based line number of each empty handler; the shell
+  # turns every line into a canonical CC-06 finding through `emit`, so the finding is
+  # counted, summarised and gated exactly like every other CC-* check. `lineno` is
+  # captured before any look-ahead `getline` so multi-line handlers keep their own line.
+  while IFS= read -r lineno; do
+    [ -n "$lineno" ] || continue
+    emit CC-06 "$file" "$lineno" "prohibited silent exception swallowing; log with error+stack trace or rethrow"
+  done < <(awk '
     function is_blank(text) { return text ~ /^[[:space:]]*$/ || text ~ /^[[:space:]]*(\/\/|#|\*)/ }
-    function is_log(text) { return text ~ /log|Log|LOG|os_log|NSLog|tracing::|fmt\./ }
     {
       line = $0
-      if (line ~ /catch/ && line ~ /\{[[:space:]]*\}[[:space:]]*$/) {
-        printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        next
-      }
+      lineno = NR
+      if (line ~ /catch/ && line ~ /\{[[:space:]]*\}[[:space:]]*$/) { print lineno; next }
       if (line ~ /catch[[:space:]]*(\([^)]*\))?[[:space:]]*\{[[:space:]]*$/) {
         emptied = 1
         for (lookahead = 1; lookahead <= 3; lookahead++) {
@@ -369,35 +378,19 @@ check_silent_catches() {
           emptied = 0
           break
         }
-        if (emptied) {
-          printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        }
+        if (emptied) print lineno
         next
       }
-      if (line ~ /except[^:]*:[[:space:]]*pass[[:space:]]*$/) {
-        printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        next
-      }
+      if (line ~ /except[^:]*:[[:space:]]*pass[[:space:]]*$/) { print lineno; next }
       if (line ~ /except[^:]*:[[:space:]]*$/) {
         if ((getline upcoming) > 0) {
-          if (upcoming ~ /^[[:space:]]*pass[[:space:]]*$/) {
-            printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-          }
+          if (upcoming ~ /^[[:space:]]*pass[[:space:]]*$/) print lineno
         }
         next
       }
-      if (line ~ /if[[:space:]]+let[[:space:]]+Err\(_\)/ && line ~ /\{[[:space:]]*\}[[:space:]]*$/) {
-        printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        next
-      }
-      if (line ~ /Err\(_\)[[:space:]]*=>[[:space:]]*\{[[:space:]]*\}/) {
-        printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        next
-      }
-      if (line ~ /if[[:space:]]+err[[:space:]]*!=[[:space:]]*nil[[:space:]]*\{[[:space:]]*\}[[:space:]]*$/) {
-        printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        next
-      }
+      if (line ~ /if[[:space:]]+let[[:space:]]+Err\(_\)/ && line ~ /\{[[:space:]]*\}[[:space:]]*$/) { print lineno; next }
+      if (line ~ /Err\(_\)[[:space:]]*=>[[:space:]]*\{[[:space:]]*\}/) { print lineno; next }
+      if (line ~ /if[[:space:]]+err[[:space:]]*!=[[:space:]]*nil[[:space:]]*\{[[:space:]]*\}[[:space:]]*$/) { print lineno; next }
       if (line ~ /if[[:space:]]+err[[:space:]]*!=[[:space:]]*nil[[:space:]]*\{[[:space:]]*$/) {
         emptied = 1
         for (lookahead = 1; lookahead <= 3; lookahead++) {
@@ -407,21 +400,13 @@ check_silent_catches() {
           emptied = 0
           break
         }
-        if (emptied) {
-          printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        }
+        if (emptied) print lineno
         next
       }
-      if (line ~ /^[[:space:]]*_[[:space:]]*=[[:space:]]*err[[:space:]]*;?[[:space:]]*$/) {
-        printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        next
-      }
-      if (line ~ /\.ok\(\)[[:space:]]*;[[:space:]]*$/) {
-        printf "CC-06 %s:%d — %s\n", file, NR, "prohibited silent exception swallowing; log with error+stack trace or rethrow"
-        next
-      }
+      if (line ~ /^[[:space:]]*_[[:space:]]*=[[:space:]]*err[[:space:]]*;?[[:space:]]*$/) { print lineno; next }
+      if (line ~ /\.ok\(\)[[:space:]]*;[[:space:]]*$/) { print lineno; next }
     }
-  ' "$file" 2>/dev/null
+  ' "$file" 2>/dev/null)
 }
 
 # ------------------------------------------------------------------------------
@@ -660,10 +645,11 @@ audit_trigger_coherence() {
     fi
     if is_adoption && user_owned_skill "$skill"; then continue; fi
     frontmatter="$(frontmatter_value "$skill" description | tr '[:upper:]' '[:lower:]')"
-    printf '%s' "$row" | tr '|' '\n' | tail -n +2 > "$scratch"
+    # The Triggers cell is a comma-separated list of quoted keywords; every keyword is
+    # checked on its own so SK-04 reports the exact missing trigger (spec section 4).
+    printf '%s' "$row" | sed 's/^[^|]*|//; s/|$//' | tr ',' '\n' > "$scratch"
     while IFS= read -r trigger; do
-      [ -n "$trigger" ] || continue
-      trigger="$(printf '%s' "$trigger" | sed 's/^"//;s/"$//' | tr '[:upper:]' '[:lower:]')"
+      trigger="$(printf '%s' "$trigger" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^"//;s/"$//' | tr '[:upper:]' '[:lower:]')"
       [ -n "$trigger" ] || continue
       case "$frontmatter" in
         *"$trigger"*) : ;;
@@ -992,6 +978,20 @@ run_conform() {
     printf '✅ no unresolved template placeholders\n'
   fi
 
+  # Harness mirror parity is a doctor prerequisite (spec section 8): a divergent mirror
+  # means the canonical skills are not the ones the harness will load.
+  SK_FAILURES=0
+  audit_mirror_parity
+  checks=$((checks + 1))
+  if [ "$SK_FAILURES" -eq 0 ]; then
+    passed=$((passed + 1))
+    printf '✅ harness skill mirror parity verified\n'
+  else
+    printf '❌ harness skill mirror parity failed (run oaef skills sync-mirrors)\n' >&2
+    failed=1
+  fi
+
+  SK_FAILURES=0
   run_skills_selftest
   checks=$((checks + 1))
   if [ "$SK_FAILURES" -eq 0 ]; then

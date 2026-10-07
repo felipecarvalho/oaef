@@ -1219,8 +1219,7 @@ function runSync() {
   if (fs.existsSync(AGENTS_FILE)) {
     const banner = [
       '<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->',
-      "<!-- To modify rules, edit AGENTS.md and run 'oaef sync'. -->",
-      '',
+      "<!-- To modify rules, edit AGENTS.md and run \"oaef sync\". -->",
     ].join('\n');
     fs.writeFileSync('CLAUDE.md', `${banner}\n\n${fs.readFileSync(AGENTS_FILE, 'utf8')}`);
     console.log('✅ Synchronized AGENTS.md -> CLAUDE.md');

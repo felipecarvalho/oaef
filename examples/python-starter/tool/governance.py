@@ -1327,8 +1327,9 @@ def run_sync():
     with open("CLAUDE.md", "w", encoding="utf-8") as handle:
         handle.write(
             "<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->\n"
-            "<!-- To modify rules, edit AGENTS.md and run 'oaef sync'. -->\n\n"
+            "<!-- To modify rules, edit AGENTS.md and run \"oaef sync\". -->\n\n"
             + content
+            + "\n"
         )
     sys.stdout.write("✅ Synchronized AGENTS.md -> CLAUDE.md\n")
 

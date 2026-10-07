@@ -15,6 +15,8 @@ metadata:
 
 > **Stack Profile:** Dart & Flutter
 > **Governance Standard:** OAEF v1.1.0 (Author: Felipe Carvalho)
+
+> **Attribution:** the Simplicity Ladder is inspired by Dietrich Gebert's *Ponytail* minimalism (smallest correct diff, zero AI slop).
 > **Skill Class:** meta
 
 ## Mission

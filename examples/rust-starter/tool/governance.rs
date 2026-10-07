@@ -956,7 +956,7 @@ impl Engine {
     fn run_sync(&mut self) {
         if let Some(agents) = read_text(AGENTS_FILE) {
             let content = format!(
-                "<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->\n<!-- To modify rules, edit AGENTS.md and run 'oaef sync'. -->\n\n{}",
+                "<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->\n<!-- To modify rules, edit AGENTS.md and run \"oaef sync\". -->\n\n{}",
                 agents
             );
             if fs::write("CLAUDE.md", content).is_ok() {

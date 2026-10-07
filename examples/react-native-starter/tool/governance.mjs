@@ -1311,7 +1311,7 @@ function runSync() {
   }
   const content = fs.readFileSync('AGENTS.md', 'utf8');
   const banner = '<!-- AUTO-GENERATED MIRROR FROM AGENTS.md. DO NOT EDIT DIRECTLY. -->\n'
-    + "<!-- To modify rules, edit AGENTS.md and run 'oaef sync'. -->\n\n";
+    + "<!-- To modify rules, edit AGENTS.md and run \"oaef sync\". -->\n\n";
   fs.writeFileSync('CLAUDE.md', banner + content);
   process.stdout.write('✅ Synchronized AGENTS.md -> CLAUDE.md\n');
 }
