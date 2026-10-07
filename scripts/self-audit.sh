@@ -2,7 +2,7 @@
 # ==============================================================================
 # OAEF Framework Self-Audit
 # Installs every supported stack into a temporary sandbox and verifies that the
-# generated repository satisfies the OAEF v1.1.0 conformance checklist:
+# generated repository satisfies the OAEF conformance checklist:
 # structure, the 13 skills, the 8 standards, harness mirrors, the governance
 # engine (executed when its interpreter is present, statically audited otherwise)
 # and the adoption/upgrade path over the legacy fixture.
@@ -16,6 +16,9 @@ ALL_STACKS=(dart-flutter react-native expo typescript-web kotlin-multiplatform k
 STACKS=("${ALL_STACKS[@]}")
 RUN_STACKS="yes"
 RUN_LEGACY_FIXTURE="no"
+
+EXPECTED_VERSION="$(tr -d '[:space:]' < "$ROOT_DIR/VERSION" 2>/dev/null || true)"
+[ -n "$EXPECTED_VERSION" ] || EXPECTED_VERSION="1.1.1"
 
 CATALOG_SKILLS="ponytail nullable-types architecture-audit screen-builder component-author responsive-layout ui-preview fix-layout-issues test-generator collect-coverage run-static-analysis code-review conformance-audit"
 MIRROR_DIRS=".claude/skills .cursor/rules .windsurf/skills .cline/skills .grok/agents"
@@ -227,8 +230,8 @@ structural_conformance() {
     failures=$((failures + 1))
   fi
 
-  if ! grep -q '"version": "1.1.0"' "$project_dir/oaef.context.json" 2>/dev/null; then
-    echo "   ❌ oaef.context.json does not declare version 1.1.0"
+  if ! grep -q "\"version\": \"$EXPECTED_VERSION\"" "$project_dir/oaef.context.json" 2>/dev/null; then
+    echo "   ❌ oaef.context.json does not declare version $EXPECTED_VERSION"
     failures=$((failures + 1))
   fi
 
